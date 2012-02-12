@@ -3,17 +3,7 @@ define [
   'Underscore', 
   'Backbone',
   'order!threenodes/core/Node',
-  'order!threenodes/nodes/Base',
-  'order!threenodes/nodes/Conditional',
-  'order!threenodes/nodes/Geometry',
-  'order!threenodes/nodes/Lights',
-  'order!threenodes/nodes/Materials',
-  'order!threenodes/nodes/Math',
-  'order!threenodes/nodes/PostProcessing',
-  'order!threenodes/nodes/Three',
-  'order!threenodes/nodes/Utils',
-  'order!threenodes/nodes/Spread',
-  'order!threenodes/nodes/Particle',
+  'order!threenodes/nodes/AIM',
 ], ($, _, Backbone) ->
   "use strict"
   class ThreeNodes.NodeGraph

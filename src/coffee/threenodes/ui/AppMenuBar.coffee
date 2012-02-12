@@ -38,3 +38,6 @@ define [
         when "export image" then @context.commandMap.execute("ExportImageCommand", "exported-image.png")
         when "rebuild all shaders" then @context.commandMap.execute("RebuildShadersCommand")
         when "remove selected node(s)" then @context.commandMap.execute("RemoveSelectedNodesCommand")
+        when "execute all" then @context.commandMap.execute("ExecuteGraph")
+        when "commonsense login" then @context.commandMap.execute("CSLoginCommand")
+        

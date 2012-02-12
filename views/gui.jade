@@ -1,0 +1,30 @@
+!!! 5
+html(lang='en', xml:lang='en', xmlns='http://www.w3.org/1999/xhtml')
+  head
+    meta(content='text/html;charset=UTF-8', http-equiv='content-type')
+    title AIM GUI
+    script(data-main='assets/js/boot.js', src='assets/js/libs/require-jquery.js')
+    link(href='assets/css/screen.css', media='all', rel='stylesheet', type='text/css')
+    link(href='assets/js/libs/colorpicker/css/colorpicker.css', media='all', rel='stylesheet', type='text/css')
+    link(href='favicon2.ico', rel='shortcut icon', type='image/x-icon')
+  body
+    header
+      #logo
+        h2 Please Refresh this page for one or more times
+    #container-wrapper
+      #container
+        #graph
+    #sidebar
+      ul
+        li
+          a(href='#tab-new') New
+        li
+          a(href='#tab-attribute') Attribute
+      #tab-attribute
+        | empty...
+      #tab-new
+        input#node_filter(placeholder='Search', type='input')
+    #sidebar-toggle
+    input#main_file_input_open(multiple='false', type='file')
+    footer#footer
+      | DObots | AIMGUI using ThreeNodes.js | thanks to idflood.com | 2012

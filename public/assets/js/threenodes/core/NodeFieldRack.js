@@ -1,6 +1,8 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', 'order!threenodes/core/NodeFieldRackView'], function($, _, Backbone) {
   "use strict";  return ThreeNodes.NodeFieldRack = (function() {
+
     function NodeFieldRack(node) {
       this.node = node;
       this.add_center_textfield = __bind(this.add_center_textfield, this);
@@ -27,38 +29,39 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       this.node_fields_by_name.outputs = {};
       this.view = false;
     }
+
     NodeFieldRack.prototype.onRegister = function() {
       this.view = this.context.injector.instanciate(ThreeNodes.NodeFieldRackView, {
         node: this.node
       });
       return true;
     };
+
     NodeFieldRack.prototype.get = function(key, is_out) {
-      if (is_out == null) {
-        is_out = false;
-      }
+      if (is_out == null) is_out = false;
       if (is_out === true) {
         return this.node_fields_by_name.outputs[key];
       } else {
         return this.node_fields_by_name.inputs[key];
       }
     };
+
     NodeFieldRack.prototype.set = function(key, value) {
       return this.node_fields_by_name.outputs[key].set(value);
     };
+
     NodeFieldRack.prototype.getMaxInputSliceCount = function() {
       var f, fid, res;
       res = 1;
       for (fid in this.node_fields.inputs) {
         f = this.node_fields.inputs[fid];
         if (f.val && $.type(f.val) === "array") {
-          if (f.val.length > res) {
-            res = f.val.length;
-          }
+          if (f.val.length > res) res = f.val.length;
         }
       }
       return res - 1;
     };
+
     NodeFieldRack.prototype.getUpstreamNodes = function() {
       var c, f, fid, res, _i, _len, _ref;
       res = [];
@@ -72,6 +75,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return res;
     };
+
     NodeFieldRack.prototype.getDownstreamNodes = function() {
       var c, f, fid, res, _i, _j, _len, _len2, _ref, _ref2;
       res = [];
@@ -87,6 +91,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return res;
     };
+
     NodeFieldRack.prototype.setFieldInputUnchanged = function() {
       var f, fid, _i, _len, _ref, _results;
       _ref = this.node_fields.inputs;
@@ -98,6 +103,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return _results;
     };
+
     NodeFieldRack.prototype.render_connections = function() {
       var f;
       for (f in this.node_fields.inputs) {
@@ -108,6 +114,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return true;
     };
+
     NodeFieldRack.prototype.remove_all_connections = function() {
       var f, _results;
       for (f in this.node_fields.inputs) {
@@ -119,6 +126,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return _results;
     };
+
     NodeFieldRack.prototype.toJSON = function() {
       var res;
       res = {
@@ -131,6 +139,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       };
       return res;
     };
+
     NodeFieldRack.prototype.toCode = function() {
       var field, res;
       res = "{'in': [\n";
@@ -140,6 +149,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       res += "\t]}";
       return res;
     };
+
     NodeFieldRack.prototype.toXML = function() {
       var f, res;
       res = "\t\t<in>\n";
@@ -154,18 +164,18 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       res += "\t\t</out>\n";
       return res;
     };
+
     NodeFieldRack.prototype.fromJSON = function(data) {
       var f, node_field, _i, _len, _ref;
       _ref = data.fields["in"];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         f = _ref[_i];
         node_field = this.node_fields_by_name.inputs[f.name];
-        if (node_field && f.val) {
-          node_field.set(f.val);
-        }
+        if (node_field && f.val) node_field.set(f.val);
       }
       return true;
     };
+
     NodeFieldRack.prototype.fromXML = function(data) {
       var self;
       self = this;
@@ -173,17 +183,14 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
         var f, field_val;
         f = self.node_fields.inputs["fid-" + $(this).attr("fid")];
         field_val = $(this).attr("val");
-        if (f && field_val !== "[object Object]") {
-          return f.set(field_val);
-        }
+        if (f && field_val !== "[object Object]") return f.set(field_val);
       });
       return true;
     };
+
     NodeFieldRack.prototype.addField = function(name, value, direction) {
       var f;
-      if (direction == null) {
-        direction = "inputs";
-      }
+      if (direction == null) direction = "inputs";
       f = false;
       if ($.type(value) === "object") {
         if (value.values) {
@@ -191,18 +198,15 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
         } else {
           f = new ThreeNodes.fields.types[value.type](name, value.val);
         }
-        if (value["default"] !== null) {
-          f.default_value = value["default"];
-        }
+        if (value["default"] !== null) f.default_value = value["default"];
       } else {
         f = this.create_field_from_default_type(name, value);
       }
-      if (direction !== "inputs") {
-        f.is_output = true;
-      }
+      if (direction !== "inputs") f.is_output = true;
       this.registerField(f);
       return f;
     };
+
     NodeFieldRack.prototype.addFields = function(fields_array) {
       var dir, fname, value;
       for (dir in fields_array) {
@@ -213,6 +217,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return true;
     };
+
     NodeFieldRack.prototype.registerField = function(field) {
       field.node = this.node;
       if (field.is_output === false) {
@@ -229,6 +234,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return field;
     };
+
     NodeFieldRack.prototype.render_sidebar = function() {
       var $target, f;
       $target = $("#tab-attribute");
@@ -238,14 +244,13 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       }
       return true;
     };
+
     NodeFieldRack.prototype.add_center_textfield = function(field) {
       var f_in;
       $(".options .center", this.node.main_view).append("<div><input type='text' id='f-txt-input-" + field.fid + "' /></div>");
       f_in = $("#f-txt-input-" + field.fid);
       field.on_value_update_hooks.update_center_textfield = function(v) {
-        if (v !== null) {
-          return f_in.val(v.toString());
-        }
+        if (v !== null) return f_in.val(v.toString());
       };
       f_in.val(field.get());
       if (field.is_output === true) {
@@ -259,6 +264,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
         });
       }
     };
+
     NodeFieldRack.prototype.create_field_from_default_type = function(fname, default_value) {
       var ftype;
       ftype = (function() {
@@ -273,6 +279,8 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
       })();
       return new ThreeNodes.fields.types[ftype](fname, default_value);
     };
+
     return NodeFieldRack;
+
   })();
 });

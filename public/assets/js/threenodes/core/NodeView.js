@@ -1,4 +1,4 @@
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "order!libs/jquery.tmpl.min", "order!libs/jquery.contextMenu", "order!libs/jquery-ui/js/jquery-ui-1.9m6.min", 'order!threenodes/utils/Utils'], function($, _, Backbone, _view_node_template) {
   "use strict";  ThreeNodes.NodeView = Backbone.View.extend({
     initialize: function() {
@@ -77,9 +77,7 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "or
           return apply_input_result();
         });
         return $input.keydown(function(e) {
-          if (e.keyCode === 13) {
-            return apply_input_result();
-          }
+          if (e.keyCode === 13) return apply_input_result();
         });
       });
     },
@@ -129,11 +127,12 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "or
       });
     },
     make_selectable: function() {
-      var self;
+      var self,
+        _this = this;
       self = this;
       return $("#container").selectable({
         filter: ".node",
-        stop: __bind(function(event, ui) {
+        stop: function(event, ui) {
           var $selected, nodes;
           $selected = $(".node.ui-selected");
           nodes = [];
@@ -144,7 +143,7 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "or
             return nodes.push(ob.anim);
           });
           return self.options.apptimeline.timeline.selectAnims(nodes);
-        }, this)
+        }
       });
     }
   });

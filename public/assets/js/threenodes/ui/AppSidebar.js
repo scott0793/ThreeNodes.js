@@ -1,6 +1,8 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], function($, _, Backbone) {
   "use strict";  return ThreeNodes.AppSidebar = (function() {
+
     function AppSidebar() {
       this.init_sidebar_tab_new_node = __bind(this.init_sidebar_tab_new_node, this);
       this.init_sidebar_search = __bind(this.init_sidebar_search, this);
@@ -10,12 +12,14 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
       this.init_sidebar_tabs = __bind(this.init_sidebar_tabs, this);
       this.onRegister = __bind(this.onRegister, this);      _.extend(this, Backbone.Events);
     }
+
     AppSidebar.prototype.onRegister = function() {
       this.init_sidebar_tab_new_node();
       this.init_sidebar_search();
       this.init_sidebar_toggle();
       return this.init_sidebar_tabs();
     };
+
     AppSidebar.prototype.init_sidebar_tabs = function() {
       return $("#sidebar").tabs({
         fx: {
@@ -24,6 +28,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
         }
       });
     };
+
     AppSidebar.prototype.init_sidebar_toggle = function() {
       return $("#sidebar-toggle").click(function(e) {
         var $t, o;
@@ -60,6 +65,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
         }
       });
     };
+
     AppSidebar.prototype.filter_list_item = function($item, value) {
       var s;
       s = $.trim($("a", $item).html()).toLowerCase();
@@ -69,6 +75,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
         return $item.show();
       }
     };
+
     AppSidebar.prototype.filter_list = function(ul, value) {
       var has_visible_items, self, ul_title;
       self = this;
@@ -83,6 +90,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
         return ul_title.show();
       }
     };
+
     AppSidebar.prototype.init_sidebar_search = function() {
       var self;
       self = this;
@@ -98,6 +106,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
         }
       });
     };
+
     AppSidebar.prototype.init_sidebar_tab_new_node = function() {
       var $container, node, nt, self;
       self = this;
@@ -131,6 +140,8 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
         }
       });
     };
+
     return AppSidebar;
+
   })();
 });

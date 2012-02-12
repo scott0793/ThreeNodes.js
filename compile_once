@@ -8,12 +8,6 @@ require 'find'
 
 files = {}
 
-def exec(cmd)
-  puts "# Run: #{cmd}"
-  output = `#{cmd}`
-  print output
-end
-
 def compile_file(f, file_out)
   cmd = nil
   
@@ -28,23 +22,27 @@ def compile_file(f, file_out)
   end
   
   if cmd != nil
-    exec cmd
+    puts "# Run: #{cmd} (adjusted)"
+    output = `#{cmd}`
+    print output
   end
   
 end
 
-
-loop do
-  Find.find('src/') do |f|
-    ctime = File.ctime(f).to_i
+# Go through all files in src
+Find.find('src/') do |f|
+  ctime = File.ctime(f).to_i
   
+  case f
+  when /\.svn/ # skip all .svn files
+  else
     if ctime != files[f]
       files[f] = ctime
       f_out = f.clone
-    
+      puts "# recompiling: #{f}" 
       compile_file f, f_out
     end
   end
-  
-  sleep 1
 end
+
+

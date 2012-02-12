@@ -1,3 +1,4 @@
+
 define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order!libs/jquery.contextMenu", "order!libs/jquery-ui/js/jquery-ui-1.9m6.min", 'order!threenodes/utils/Utils'], function($, _, Backbone, _view_node_template) {
   "use strict";  ThreeNodes.NodeFieldRackView = Backbone.View.extend({
     add_field_listener: function($field) {
@@ -10,9 +11,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
       highlight_possible_targets = function() {
         var target;
         target = ".outputs .field";
-        if (field.is_output === true) {
-          target = ".inputs .field";
-        }
+        if (field.is_output === true) target = ".inputs .field";
         return $(target).filter(function() {
           return $(this).parent().parent().parent().attr("id") !== ("nid-" + self.nid);
         }).addClass("field-possible-target");
@@ -55,9 +54,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
         }
       });
       accept_class = ".outputs .inner-field";
-      if (field && field.is_output === true) {
-        accept_class = ".inputs .inner-field";
-      }
+      if (field && field.is_output === true) accept_class = ".inputs .inner-field";
       $(".inner-field", $field).droppable({
         accept: accept_class,
         activeClass: "ui-state-active",

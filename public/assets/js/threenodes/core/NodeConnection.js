@@ -1,6 +1,8 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
 define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order!libs/jquery.contextMenu", "order!libs/jquery-ui/js/jquery-ui-1.9m6.min", 'order!threenodes/utils/Utils'], function($, _, Backbone, _view_node_template) {
   "use strict";  return ThreeNodes.NodeConnection = (function() {
+
     function NodeConnection(from_field, to_field, cid) {
       this.from_field = from_field;
       this.to_field = to_field;
@@ -17,6 +19,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
         this.from_field.node.dirty = true;
       }
     }
+
     NodeConnection.prototype.switch_fields_if_needed = function() {
       var f_out;
       if (this.from_field.is_output === false) {
@@ -25,19 +28,15 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
         return this.from_field = f_out;
       }
     };
+
     NodeConnection.prototype.validate_connection = function() {
-      if (!this.from_field || !this.to_field) {
-        return false;
-      }
-      if (this.from_field.is_output === this.to_field.is_output) {
-        return false;
-      }
-      if (this.from_field.node.nid === this.to_field.node.nid) {
-        return false;
-      }
+      if (!this.from_field || !this.to_field) return false;
+      if (this.from_field.is_output === this.to_field.is_output) return false;
+      if (this.from_field.node.nid === this.to_field.node.nid) return false;
       this.switch_fields_if_needed();
       return true;
     };
+
     NodeConnection.prototype.onRegister = function() {
       if (this.is_valid) {
         this.line = false;
@@ -45,6 +44,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
         return this.render();
       }
     };
+
     NodeConnection.prototype.get_path = function() {
       var container_y, diffx, diffy, f1, f2, min_diff, ofx, ofy, x1, x2, x3, x4, y1, y2, y3, y4;
       container_y = parseFloat($("#container-wrapper").css("top"));
@@ -65,6 +65,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
       y3 = y4;
       return ["M", x1.toFixed(3), y1.toFixed(3), "C", x2, y2, x3, y3, x4.toFixed(3), y4.toFixed(3)].join(",");
     };
+
     NodeConnection.prototype.toJSON = function() {
       var res;
       res = {
@@ -76,9 +77,11 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
       };
       return res;
     };
+
     NodeConnection.prototype.toXML = function() {
       return "\t\t<connection id='" + this.cid + "' from='" + this.from_field.fid + "' to='" + this.to_field.fid + "'/>\n";
     };
+
     NodeConnection.prototype.toCode = function() {
       var res;
       res = "var connection_" + this.cid + "_data = {\n";
@@ -89,6 +92,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
       res += "var connection_" + this.cid + " = nodegraph.createConnectionFromObject(connection_" + this.cid + "_data);\n";
       return res;
     };
+
     NodeConnection.prototype.get_field_position = function(field) {
       var diff, o1;
       o1 = $("#fid-" + field.fid + " .inner-field span").offset();
@@ -104,6 +108,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
       }
       return o1;
     };
+
     NodeConnection.prototype.remove = function() {
       this.from_field.unregister_connection(this);
       this.to_field.unregister_connection(this);
@@ -116,6 +121,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
       this.context.commandMap.execute("RemoveConnectionCommand", this);
       return false;
     };
+
     NodeConnection.prototype.render = function() {
       var color;
       if (ThreeNodes.svg) {
@@ -132,6 +138,8 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.tmpl.min", "order
         }
       }
     };
+
     return NodeConnection;
+
   })();
 });

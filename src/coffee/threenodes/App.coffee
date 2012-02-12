@@ -7,17 +7,18 @@ ThreeNodes.websocket_enabled = false
 ThreeNodes.nodes =
   fields: {}
   types:
-    Base: {}
-    Math: {}
-    Utils: {}
-    Conditional: {}
-    Spread: {}
-    Geometry: {}
-    Three: {}
-    Materials: {}
-    Lights: {}
-    PostProcessing: {}
-    Particle: {}
+    AIM: {}
+#    Base: {}
+#    Math: {}
+#    Utils: {}
+#    Conditional: {}
+#    Spread: {}
+#    Geometry: {}
+#    Three: {}
+#    Materials: {}
+#    Lights: {}
+#    PostProcessing: {}
+#    Particle: {}
 
 ThreeNodes.sound_nodes = []
 
@@ -60,6 +61,8 @@ define [
   'order!threenodes/commands/ExportCodeCommand',
   'order!threenodes/commands/ExportImageCommand',
   'order!threenodes/commands/OnUiResizeCommand',
+  'order!threenodes/commands/CSLoginCommand'
+  'order!threenodes/commands/ExecuteGraph',
   "order!libs/jquery.ba-bbq.min",
 ], ($, _, Backbone, NodeGraph, AppUI) ->
   "use strict"
@@ -91,6 +94,8 @@ define [
       @commandMap.register "ExportCodeCommand", ThreeNodes.ExportCodeCommand
       @commandMap.register "ExportImageCommand", ThreeNodes.ExportImageCommand
       @commandMap.register "OnUiResizeCommand", ThreeNodes.OnUiResizeCommand
+      @commandMap.register "CSLoginCommand", ThreeNodes.CSLoginCommand
+      @commandMap.register "ExecuteGraph", ThreeNodes.ExecuteGraph
       
       @injector.mapSingleton "NodeGraph", ThreeNodes.NodeGraph
       @injector.mapSingleton "AppWebsocket", ThreeNodes.AppWebsocket
