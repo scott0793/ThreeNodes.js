@@ -355,16 +355,14 @@ define [
             else if port_parser[0] is "out"
               inner_rack.addField(port_parser[1],0,"outputs") 
 
-               
           
     typename: => @inner_name
     
     
-    load= (url) =>
+    load: (url) =>
       #alert url 
       xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       xhr.open 'GET', url, true
       xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
       xhr.send null
-     
-    
+
