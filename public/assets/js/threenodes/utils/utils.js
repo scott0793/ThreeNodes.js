@@ -9,9 +9,7 @@ ThreeNodes.Utils.get_uid = function() {
 };
 
 ThreeNodes.Utils.Rc4Random = (function() {
-
   "use strict";
-
   function Rc4Random(seed) {
     this.getRandomNumber = __bind(this.getRandomNumber, this);
     this.getRandomByte = __bind(this.getRandomByte, this);

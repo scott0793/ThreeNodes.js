@@ -8,8 +8,6 @@ var url = require("url");
 var everyauth = require('everyauth');
 var conf = require('./conf.js');
 
-//var qs = require('querystring');
-
 var first_pass_sass = false;
 
 /***************************************************************************************
@@ -90,33 +88,41 @@ function respondFunction(req,res){
 		});
 	}
 	else if (pathname == "/cslogin2") {
-		console.log("Logging through");
 		var oauth_symbols = query.split("&");
 		var token = ''; var verifier = '';
 		for (var i = 0; i < oauth_symbols.length; i++) {
-			console.log("split for &: " + oauth_symbols[i]);
 			var str = oauth_symbols[i].split("=");
-			console.log("split for =: " + str);
 			if (i == 0) token = str[1];
 			if (i == 1) verifier = str[1];
 		}
-		console.log("aimlogin oauth1 " + token + " " + verifier);
-		exec("aimlogin oauth1 " + token + " " + verifier, function (error, stdout, stderr) { 
-			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-			res.write(stdout);
-			res.end();
+		// warning: this secret can be temporarily stored, but subsequent token and secret need to go in user db
+		var secret = req.session.oauthsecret;
+		console.log("aimlogin oauth1 " + token + " " + secret + " " + verifier);
+		exec("aimlogin oauth1 " + token + " " + secret + " " + verifier, function (error, stdout, stderr) {
+			res.render('gui', {title: 'AIM GUI', layout: false });
+//			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+//			res.write(stdout);
+//			res.end();
 		});
 	}
 	else if (pathname == "/cslogin") {
-		console.log("I am in cslogin and will execute 'aimlist " + query + "'");
+		// this will return a oauth token but should also return a secret
+		console.log("I am in cslogin and will execute 'aimlogin oauth0 " + query + "'");
+		
 		exec("aimlogin oauth0 " + query, function (error, stdout, stderr) { 
 			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-			res.write(stdout);
+			var vars = stdout.split("\n");
+			for (var i = 0; i < vars.length-1; i++) { 
+				console.log("t:" + vars[i]);
+				if (i == 0) var token = vars[i]; 
+				if (i == 1) req.session.oauthsecret = vars[i]; 
+			}
+			res.write(token);
 			res.end();
 		});
 	} 
 	else {
-		console.log("aimrun running!");
+		console.log("Very dangerous code... we can run anything we want...");
 		var body = '';
 		req.on('data', function (data) {
 			body += data;
@@ -124,13 +130,9 @@ function respondFunction(req,res){
 		});
 		console.log("body"+body);
 		req.on('end', function () {
-			/*
-			var POST = qs.parse(body)
-			console.log("Post:"+POST);
-			*/
 
 			var body_split=body.split("\n");
-			console.log(body_split[0]);
+			//console.log(body_split[0]);
 			for (var i = 0; i<body_split.length-1;i++){
 				console.log(body_split[i]);
 				// execute aimrun, aimconnect etc. 
@@ -179,13 +181,12 @@ function addUser (source, sourceUser) {
 var usersByFbId = {};
 var usersByGoogleId = {};
 
-everyauth.everymodule
-.findUserById( function (id, callback) {
+// Function everymodule.findUserById needs to be implemented to be able to use req.user 
+everyauth.everymodule.findUserById( function (id, callback) {
 	callback(null, usersById[id]);
 });
 
-everyauth
-.facebook
+everyauth.facebook
 .appId(conf.fb.appId)
 .appSecret(conf.fb.appSecret)
 .findOrCreateUser( function (session, accessToken, accessTokenExtra, fbUserMetadata) {
@@ -227,7 +228,6 @@ app.configure(function(){
 	app.use(express.methodOverride());
 	app.use(app.router);
 	app.use(everyauth.middleware());
-	//app.use(express.static(__dirname + '/public'));
 	app.use(express['static'](__dirname + '/public'));
 });
 
@@ -260,6 +260,7 @@ app.get('/gui',function(req,res){
 
 app.get('/cslogin',function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
+		console.log('Logging in');
 		respondFunction(req,res);
 	} else{
 		console.log("The user is NOT logged in");
@@ -268,12 +269,13 @@ app.get('/cslogin',function(req,res) {
 });
 
 app.get('/cslogin2',function(req,res) {
-//	if(req.session.auth && req.session.auth.loggedIn){
+	if(req.session.auth && req.session.auth.loggedIn){
+		console.log('Logging in, 2nd stage');
 		respondFunction(req,res);
-//	} else{
-//		console.log("The user is NOT logged in");
-//		res.redirect('/');
-//	}
+	} else{
+		console.log("The user is NOT logged in");
+		res.redirect('/');
+	}
 });
 
 /**
