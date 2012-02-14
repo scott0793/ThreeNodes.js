@@ -29,7 +29,7 @@ define(['jQuery', 'Underscore', 'Backbone'], function($, _, Backbone) {
         node_NameAndConnections = node_NameAndConnections + "aimconnect " + node_connection.from_field.node.typename() + node_connection.from_field.node.nid + " " + node_connection.from_field.name + " " + node_connection.to_field.node.typename() + node_connection.to_field.node.nid + " " + node_connection.to_field.name + "\n";
       }
       alert(node_NameAndConnections);
-      url = "http://localhost:8042";
+      url = "http://local.host:8042/aimrun?123";
       ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
       ajax.open('POST', url, true);
       return ajax.send(node_NameAndConnections);
