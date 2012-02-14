@@ -5,8 +5,8 @@ define(['jQuery', 'Underscore', 'Backbone'], function($, _, Backbone) {
     function InitUrlHandler() {}
 
     InitUrlHandler.prototype.execute = function() {
-      var injector, on_url_change, url_cache,
-        _this = this;
+      var injector, on_url_change, url_cache;
+      var _this = this;
       injector = this.context.injector;
       url_cache = false;
       on_url_change = function(e) {

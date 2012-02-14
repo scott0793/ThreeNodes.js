@@ -80,6 +80,7 @@ define [
     typename: => String(@constructor.name)
     
     init_main_view: () =>
+      #alert "init main view"
       @main_view = $.tmpl(_view_node_template, this)
       @main_view.data("object", this)
       @container.append(@main_view)
@@ -311,3 +312,59 @@ define [
       @v_out.set res
       true
 
+  class ThreeNodes.AIMModule extends ThreeNodes.NodeBase
+    constructor: (@x = 0, @y = 0, @name = "RandomModule",@inXML = false, @inJSON = false) ->
+      @auto_evaluate = false
+      @delays_output = false
+      @dirty = true
+
+      @inner_name = @name
+      #alert @inner_name
+      
+      
+      if @inXML
+        @nid = parseInt @inXML.attr("nid")
+        ThreeNodes.uid = @nid
+      else if @inJSON
+        @nid = @inJSON.nid
+        ThreeNodes.uid = @nid
+      else
+        @nid = ThreeNodes.Utils.get_uid()
+
+    set_fields: =>
+      url = "http://local.host:8042/aimports?"+@inner_name
+      # alert url
+      serverResponse = null
+      ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
+      ajax.open 'GET', url, true
+      ajax.send null
+      inner_rack = @rack
+      ajax.onreadystatechange = ->
+        if @readyState is 4
+          serverResponse = ajax.responseText
+          server_parser = serverResponse.split '\n'  
+          # alert "server_parser: "+server_parser 
+          for port_info in server_parser 
+            port_parser = port_info.split ' '
+            # alert port_parser
+            # alert port_parser[0]
+            if port_parser[0] is "in"
+              #alert "I am adding input fields"
+              #alert port_parser[1]
+              inner_rack.addField(port_parser[1],0)
+            else if port_parser[0] is "out"
+              inner_rack.addField(port_parser[1],0,"outputs") 
+
+               
+          
+    typename: => @inner_name
+    
+    
+    load= (url) =>
+      #alert url 
+      xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
+      xhr.open 'GET', url, true
+      xhr.overrideMimeType 'text/plain' if 'overrideMimeType' of xhr
+      xhr.send null
+     
+    

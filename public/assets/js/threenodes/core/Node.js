@@ -1,6 +1,4 @@
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = Object.prototype.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
 define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "order!libs/jquery.tmpl.min", "order!libs/jquery.contextMenu", "order!libs/jquery-ui/js/jquery-ui-1.9m6.min", 'order!threenodes/core/NodeFieldRack', 'order!threenodes/core/NodeConnection', 'order!threenodes/core/NodeView', 'order!threenodes/utils/Utils'], function($, _, Backbone, _view_node_template) {
   "use strict";  ThreeNodes.field_click_1 = false;
@@ -379,9 +377,9 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "or
     return NodeBase;
 
   })();
-  return ThreeNodes.NodeNumberSimple = (function(_super) {
+  ThreeNodes.NodeNumberSimple = (function() {
 
-    __extends(NodeNumberSimple, _super);
+    __extends(NodeNumberSimple, ThreeNodes.NodeBase);
 
     function NodeNumberSimple() {
       this.compute = __bind(this.compute, this);
@@ -440,5 +438,79 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "or
 
     return NodeNumberSimple;
 
-  })(ThreeNodes.NodeBase);
+  })();
+  return ThreeNodes.AIMModule = (function() {
+    var load;
+    var _this = this;
+
+    __extends(AIMModule, ThreeNodes.NodeBase);
+
+    function AIMModule(x, y, name, inXML, inJSON) {
+      this.x = x != null ? x : 0;
+      this.y = y != null ? y : 0;
+      this.name = name != null ? name : "RandomModule";
+      this.inXML = inXML != null ? inXML : false;
+      this.inJSON = inJSON != null ? inJSON : false;
+      this.typename = __bind(this.typename, this);
+      this.set_fields = __bind(this.set_fields, this);
+      this.auto_evaluate = false;
+      this.delays_output = false;
+      this.dirty = true;
+      this.inner_name = this.name;
+      if (this.inXML) {
+        this.nid = parseInt(this.inXML.attr("nid"));
+        ThreeNodes.uid = this.nid;
+      } else if (this.inJSON) {
+        this.nid = this.inJSON.nid;
+        ThreeNodes.uid = this.nid;
+      } else {
+        this.nid = ThreeNodes.Utils.get_uid();
+      }
+    }
+
+    AIMModule.prototype.set_fields = function() {
+      var ajax, inner_rack, serverResponse, url;
+      url = "http://local.host:8042/aimports?" + this.inner_name;
+      serverResponse = null;
+      ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
+      ajax.open('GET', url, true);
+      ajax.send(null);
+      inner_rack = this.rack;
+      return ajax.onreadystatechange = function() {
+        var port_info, port_parser, server_parser, _i, _len, _results;
+        if (this.readyState === 4) {
+          serverResponse = ajax.responseText;
+          server_parser = serverResponse.split('\n');
+          _results = [];
+          for (_i = 0, _len = server_parser.length; _i < _len; _i++) {
+            port_info = server_parser[_i];
+            port_parser = port_info.split(' ');
+            if (port_parser[0] === "in") {
+              _results.push(inner_rack.addField(port_parser[1], 0));
+            } else if (port_parser[0] === "out") {
+              _results.push(inner_rack.addField(port_parser[1], 0, "outputs"));
+            } else {
+              _results.push(void 0);
+            }
+          }
+          return _results;
+        }
+      };
+    };
+
+    AIMModule.prototype.typename = function() {
+      return this.inner_name;
+    };
+
+    load = function(url) {
+      var xhr;
+      xhr = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
+      xhr.open('GET', url, true);
+      if ('overrideMimeType' in xhr) xhr.overrideMimeType('text/plain');
+      return xhr.send(null);
+    };
+
+    return AIMModule;
+
+  }).call(this);
 });

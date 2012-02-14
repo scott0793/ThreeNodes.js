@@ -108,37 +108,81 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
     };
 
     AppSidebar.prototype.init_sidebar_tab_new_node = function() {
-      var $container, node, nt, self;
+      var $container, ajax, self, serverResponse, url;
       self = this;
       $container = $("#tab-new");
-      for (nt in ThreeNodes.nodes.types) {
-        $container.append("<h3>" + nt + "</h3><ul id='nodetype-" + nt + "'></ul>");
-        for (node in ThreeNodes.nodes.types[nt]) {
-          $("#nodetype-" + nt, $container).append("<li><a class='button' rel='" + nt + "' href='#'>" + (node.toString()) + "</a></li>");
+      url = "http://local.host:8042/aimlist?List";
+      serverResponse = null;
+      ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
+      ajax.open('GET', url, true);
+      ajax.send(null);
+      return ajax.onreadystatechange = function() {
+        var aim, node, nt, server_parser, _i, _len;
+        if (this.readyState === 4) {
+          for (nt in ThreeNodes.nodes.types) {
+            $container.append("<h3>" + nt + "</h3><ul id='nodetype-" + nt + "'></ul>");
+            if (nt === "AIM") {
+              serverResponse = ajax.responseText;
+              server_parser = serverResponse.split('\n');
+              for (_i = 0, _len = server_parser.length; _i < _len; _i++) {
+                aim = server_parser[_i];
+                $("#nodetype-" + nt, $container).append("<li><a class='button' rel='" + nt + "' href='#'>" + aim + "</a></li>");
+              }
+            } else {
+              for (node in ThreeNodes.nodes.types[nt]) {
+                $("#nodetype-" + nt, $container).append("<li><a class='button' rel='" + nt + "' href='#'>" + (node.toString()) + "</a></li>");
+              }
+            }
+          }
+          $("a.button", $container).draggable({
+            helper: "clone",
+            start: function(event, ui) {
+              return $("#sidebar").hide();
+            }
+          });
+          return $("#container").droppable({
+            accept: "#tab-new a.button",
+            activeClass: "ui-state-active",
+            hoverClass: "ui-state-hover",
+            drop: function(event, ui) {
+              var dx, dy, nodename, nodetype;
+              nodename = ui.draggable.attr("rel");
+              nodetype = jQuery.trim(ui.draggable.html());
+              dx = ui.position.left + $("#container-wrapper").scrollLeft() - 10;
+              dy = ui.position.top - 10 + $("#container-wrapper").scrollTop();
+              self.context.commandMap.execute("CreateNodeCommand", nodename, nodetype, dx, dy);
+              return $("#sidebar").show();
+            }
+          });
         }
-      }
-      $("a.button", $container).draggable({
-        revert: "valid",
-        opacity: 0.7,
-        helper: "clone",
-        revertDuration: 0,
-        scroll: false,
-        containment: "document"
-      });
-      return $("#container").droppable({
-        accept: "#tab-new a.button",
-        activeClass: "ui-state-active",
-        hoverClass: "ui-state-hover",
-        drop: function(event, ui) {
-          var dx, dy, nodename, nodetype;
-          nodename = ui.draggable.attr("rel");
-          nodetype = jQuery.trim(ui.draggable.html());
-          dx = ui.position.left + $("#container-wrapper").scrollLeft() - 10;
-          dy = ui.position.top - 10 + $("#container-wrapper").scrollTop() - $("#sidebar").scrollTop();
-          self.context.commandMap.execute("CreateNodeCommand", nodename, nodetype, dx, dy);
-          return $("#sidebar").show();
-        }
-      });
+      };
+      /*
+            for nt of ThreeNodes.nodes.types
+              $container.append("<h3>#{nt}</h3><ul id='nodetype-#{nt}'></ul>")
+              for node of ThreeNodes.nodes.types[nt]
+                $("#nodetype-#{nt}", $container).append("<li><a class='button' rel='#{nt}' href='#'>#{ node.toString() }</a></li>")
+            
+            $("a.button", $container).draggable
+              revert: "valid"
+              opacity: 0.7
+              helper: "clone"
+              revertDuration: 0
+              scroll: false
+              containment: "document"
+            
+            $("#container").droppable
+              accept: "#tab-new a.button"
+              activeClass: "ui-state-active"
+              hoverClass: "ui-state-hover"
+              drop: (event, ui) ->
+                #nodegraph.create_node(ui.draggable.attr("rel"), jQuery.trim(ui.draggable.html()), ui.position.left + $("#container-wrapper").scrollLeft() - 10, ui.position.top - 10 + $("#container-wrapper").scrollTop())
+                nodename = ui.draggable.attr("rel")
+                nodetype = jQuery.trim(ui.draggable.html())
+                dx = ui.position.left + $("#container-wrapper").scrollLeft() - 10
+                dy = ui.position.top - 10 + $("#container-wrapper").scrollTop() - $("#sidebar").scrollTop()
+                self.context.commandMap.execute("CreateNodeCommand", nodename, nodetype, dx, dy)
+                $("#sidebar").show()
+      */
     };
 
     return AppSidebar;

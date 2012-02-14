@@ -19,10 +19,13 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/Node', 'order
       var n;
       if (inXML == null) inXML = false;
       if (inJSON == null) inJSON = false;
-      n = new ThreeNodes.nodes.types[component][type](x, y, inXML, inJSON);
+      if (component === "AIM") {
+        n = new ThreeNodes.AIMModule(x, y, type, inXML, inJSON);
+      } else {
+        n = new ThreeNodes.nodes.types[component][type](x, y, inXML, inJSON);
+      }
       this.context.injector.applyContext(n);
       this.nodes.push(n);
-      this.nodes_by_nid[n.nid] = n;
       return n;
     };
 

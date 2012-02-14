@@ -37,6 +37,7 @@ define [
       this.options.y = pos.top
     
     init_el_click: () ->
+      #alert "I am in init_el_click"
       self = this
       $(@el).click (e) ->
         if e.metaKey == false

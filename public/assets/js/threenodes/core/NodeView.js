@@ -127,8 +127,8 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "or
       });
     },
     make_selectable: function() {
-      var self,
-        _this = this;
+      var self;
+      var _this = this;
       self = this;
       return $("#container").selectable({
         filter: ".node",

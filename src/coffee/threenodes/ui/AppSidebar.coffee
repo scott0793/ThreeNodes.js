@@ -65,6 +65,62 @@ define [
     init_sidebar_tab_new_node: () =>
       self = this
       $container = $("#tab-new")
+      
+      
+      url = "http://local.host:8042/aimlist?List"
+      serverResponse = null
+      ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
+      ajax.open 'GET', url, true
+      ajax.send null
+
+      ajax.onreadystatechange = ->
+        if @readyState is 4
+          for nt of ThreeNodes.nodes.types
+            $container.append("<h3>#{nt}</h3><ul id='nodetype-#{nt}'></ul>")
+            if nt is "AIM"
+              #alert "I am in the AI Module load mode!"
+              serverResponse = ajax.responseText
+              #alert serverResponse
+              server_parser = serverResponse.split '\n'
+              for aim in server_parser
+                #node = gen (aim)
+                $("#nodetype-#{nt}", $container).append("<li><a class='button' rel='#{nt}' href='#'>#{aim}</a></li>")        
+            else
+              #alert "I am in the normal load mode!"
+              for node of ThreeNodes.nodes.types[nt]
+                #alert typeof node + ": " + node.toString()
+                $("#nodetype-#{nt}", $container).append("<li><a class='button' rel='#{nt}' href='#'>#{node.toString()}</a></li>")  
+      
+         
+          $("a.button", $container).draggable
+            #revert: "valid"
+            #opacity: 0.7
+            helper: "clone"
+            #revertDuration: 0
+            start: (event, ui) ->
+              #alert "the generated class is being dragged!"
+              $("#sidebar").hide()
+          $("#container").droppable
+            accept: "#tab-new a.button"
+            activeClass: "ui-state-active"
+            hoverClass: "ui-state-hover"
+            drop: (event, ui) ->
+              #nodegraph.create_node(ui.draggable.attr("rel"), jQuery.trim(ui.draggable.html()), ui.position.left + $("#container-wrapper").scrollLeft() - 10, ui.position.top - 10 + $("#container-wrapper").scrollTop())
+              # the test added by scott
+              #alert "the node is dropped!"
+              nodename = ui.draggable.attr("rel")
+              nodetype = jQuery.trim(ui.draggable.html())
+              dx = ui.position.left + $("#container-wrapper").scrollLeft() - 10
+              dy = ui.position.top - 10 + $("#container-wrapper").scrollTop()
+              #alert nodename + " "+ nodetype + " " + dx + " " + dy 
+              self.context.commandMap.execute("CreateNodeCommand", nodename, nodetype, dx, dy)
+              $("#sidebar").show()
+      
+      
+      
+      
+      
+      ###
       for nt of ThreeNodes.nodes.types
         $container.append("<h3>#{nt}</h3><ul id='nodetype-#{nt}'></ul>")
         for node of ThreeNodes.nodes.types[nt]
@@ -90,3 +146,4 @@ define [
           dy = ui.position.top - 10 + $("#container-wrapper").scrollTop() - $("#sidebar").scrollTop()
           self.context.commandMap.execute("CreateNodeCommand", nodename, nodetype, dx, dy)
           $("#sidebar").show()
+      ###

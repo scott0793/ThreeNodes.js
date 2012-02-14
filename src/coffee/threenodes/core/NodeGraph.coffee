@@ -14,10 +14,15 @@ define [
       @types = false
     
     create_node: (component, type, x, y, inXML = false, inJSON = false) =>
-      n = new ThreeNodes.nodes.types[component][type](x, y, inXML, inJSON)
+      # alert component + "\n" + type + "\n"
+      if component is "AIM"
+        #alert "I am here in dynamic construction"
+        n = new ThreeNodes.AIMModule(x,y,type,inXML,inJSON)
+        #alert "successfull created"
+      else
+        n = new ThreeNodes.nodes.types[component][type](x, y, inXML, inJSON)
       @context.injector.applyContext(n)
       @nodes.push(n)
-      @nodes_by_nid[n.nid] = n
       n
     
     get_component_by_type: (type) =>

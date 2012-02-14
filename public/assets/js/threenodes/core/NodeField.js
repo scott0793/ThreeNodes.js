@@ -1,6 +1,4 @@
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = Object.prototype.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
 define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmpl.html", "text!templates/node_field_output.tmpl.html", 'order!threenodes/utils/Utils', "order!libs/signals.min"], function($, _, Backbone, _view_node_field_in, _view_node_field_out) {
   "use strict";  ThreeNodes.NodeField = (function() {
@@ -259,9 +257,9 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
     return NodeField;
 
   })();
-  ThreeNodes.fields.types.Any = (function(_super) {
+  ThreeNodes.fields.types.Any = (function() {
 
-    __extends(Any, _super);
+    __extends(Any, ThreeNodes.NodeField);
 
     function Any() {
       this.on_value_changed = __bind(this.on_value_changed, this);
@@ -279,10 +277,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Any;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Array = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Array = (function() {
 
-    __extends(Array, _super);
+    __extends(Array, ThreeNodes.NodeField);
 
     function Array() {
       this.get = __bind(this.get, this);
@@ -317,10 +315,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Array;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Bool = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Bool = (function() {
 
-    __extends(Bool, _super);
+    __extends(Bool, ThreeNodes.NodeField);
 
     function Bool() {
       this.compute_value = __bind(this.compute_value, this);
@@ -367,10 +365,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Bool;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.String = (function(_super) {
+  })();
+  ThreeNodes.fields.types.String = (function() {
 
-    __extends(String, _super);
+    __extends(String, ThreeNodes.NodeField);
 
     function String() {
       this.compute_value = __bind(this.compute_value, this);
@@ -410,10 +408,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return String;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Float = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Float = (function() {
 
-    __extends(Float, _super);
+    __extends(Float, ThreeNodes.NodeField);
 
     function Float() {
       this.compute_value = __bind(this.compute_value, this);
@@ -482,10 +480,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Float;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Vector2 = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Vector2 = (function() {
 
-    __extends(Vector2, _super);
+    __extends(Vector2, ThreeNodes.NodeField);
 
     function Vector2() {
       this.render_sidebar = __bind(this.render_sidebar, this);
@@ -508,10 +506,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Vector2;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Vector3 = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Vector3 = (function() {
 
-    __extends(Vector3, _super);
+    __extends(Vector3, ThreeNodes.NodeField);
 
     function Vector3() {
       this.render_sidebar = __bind(this.render_sidebar, this);
@@ -535,10 +533,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Vector3;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Vector4 = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Vector4 = (function() {
 
-    __extends(Vector4, _super);
+    __extends(Vector4, ThreeNodes.NodeField);
 
     function Vector4() {
       this.render_sidebar = __bind(this.render_sidebar, this);
@@ -563,10 +561,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Vector4;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Quaternion = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Quaternion = (function() {
 
-    __extends(Quaternion, _super);
+    __extends(Quaternion, ThreeNodes.NodeField);
 
     function Quaternion() {
       this.compute_value = __bind(this.compute_value, this);
@@ -582,10 +580,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Quaternion;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Color = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Color = (function() {
 
-    __extends(Color, _super);
+    __extends(Color, ThreeNodes.NodeField);
 
     function Color() {
       this.compute_value = __bind(this.compute_value, this);
@@ -616,10 +614,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Color;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Object3D = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Object3D = (function() {
 
-    __extends(Object3D, _super);
+    __extends(Object3D, ThreeNodes.NodeField);
 
     function Object3D() {
       this.compute_value = __bind(this.compute_value, this);
@@ -637,10 +635,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Object3D;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Scene = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Scene = (function() {
 
-    __extends(Scene, _super);
+    __extends(Scene, ThreeNodes.NodeField);
 
     function Scene() {
       this.compute_value = __bind(this.compute_value, this);
@@ -656,10 +654,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Scene;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Camera = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Camera = (function() {
 
-    __extends(Camera, _super);
+    __extends(Camera, ThreeNodes.NodeField);
 
     function Camera() {
       this.compute_value = __bind(this.compute_value, this);
@@ -677,10 +675,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Camera;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Mesh = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Mesh = (function() {
 
-    __extends(Mesh, _super);
+    __extends(Mesh, ThreeNodes.NodeField);
 
     function Mesh() {
       this.compute_value = __bind(this.compute_value, this);
@@ -698,10 +696,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Mesh;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Geometry = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Geometry = (function() {
 
-    __extends(Geometry, _super);
+    __extends(Geometry, ThreeNodes.NodeField);
 
     function Geometry() {
       this.compute_value = __bind(this.compute_value, this);
@@ -719,10 +717,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Geometry;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Material = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Material = (function() {
 
-    __extends(Material, _super);
+    __extends(Material, ThreeNodes.NodeField);
 
     function Material() {
       this.compute_value = __bind(this.compute_value, this);
@@ -740,10 +738,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Material;
 
-  })(ThreeNodes.NodeField);
-  ThreeNodes.fields.types.Texture = (function(_super) {
+  })();
+  ThreeNodes.fields.types.Texture = (function() {
 
-    __extends(Texture, _super);
+    __extends(Texture, ThreeNodes.NodeField);
 
     function Texture() {
       this.compute_value = __bind(this.compute_value, this);
@@ -761,10 +759,10 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Texture;
 
-  })(ThreeNodes.NodeField);
-  return ThreeNodes.fields.types.Fog = (function(_super) {
+  })();
+  return ThreeNodes.fields.types.Fog = (function() {
 
-    __extends(Fog, _super);
+    __extends(Fog, ThreeNodes.NodeField);
 
     function Fog() {
       this.compute_value = __bind(this.compute_value, this);
@@ -782,5 +780,5 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node_field_input.tmp
 
     return Fog;
 
-  })(ThreeNodes.NodeField);
+  })();
 });
