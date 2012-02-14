@@ -87,6 +87,14 @@ function respondFunction(req,res){
 			res.end();
 		});
 	}
+	else if (pathname == "/addsensor") {
+		var secret = req.session.oauthsecret;
+		var token = req.session.oauthtoken;
+		console.log("aimrun CSCreateSensorModule " + token + " " + secret);
+		exec("aimrun CSCreateSensorModule " + token + " " + secret, function (error, stdout, stderr) {
+			res.render('gui', {title: 'AIM GUI', layout: false });
+		});
+	}
 	else if (pathname == "/cslogin2") {
 		var oauth_symbols = query.split("&");
 		var token = ''; var verifier = '';
@@ -99,7 +107,14 @@ function respondFunction(req,res){
 		var secret = req.session.oauthsecret;
 		console.log("aimlogin oauth1 " + token + " " + secret + " " + verifier);
 		exec("aimlogin oauth1 " + token + " " + secret + " " + verifier, function (error, stdout, stderr) {
-			res.render('gui', {title: 'AIM GUI', layout: false });
+			var vars = stdout.split("\n");
+			for (var i = 0; i < vars.length-1; i++) { 
+				console.log("t:" + vars[i]);
+				if (i == 0) req.session.oauthtoken = vars[i]; 
+				if (i == 1) req.session.oauthsecret = vars[i]; 
+			}
+			res.redirect("/addsensor");
+//			res.render('gui', {title: 'AIM GUI', layout: false });
 //			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
 //			res.write(stdout);
 //			res.end();
@@ -271,6 +286,18 @@ app.get('/cslogin',function(req,res) {
 app.get('/cslogin2',function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('Logging in, 2nd stage');
+		respondFunction(req,res);
+	} else{
+		console.log("The user is NOT logged in");
+		res.redirect('/');
+	}
+});
+
+/**
+ * Temporary test
+ */
+app.get('/addsensor',function(req,res) {
+	if(req.session.auth && req.session.auth.loggedIn){
 		respondFunction(req,res);
 	} else{
 		console.log("The user is NOT logged in");
