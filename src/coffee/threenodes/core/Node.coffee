@@ -360,7 +360,7 @@ define [
     typename: => @inner_name
     
     
-    load= (url) =>
+    load: (url) =>
       #alert url 
       xhr = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       xhr.open 'GET', url, true
