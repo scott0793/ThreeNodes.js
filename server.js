@@ -90,8 +90,13 @@ function respondFunction(req,res){
 	else if (pathname == "/addsensor") {
 		var secret = req.session.oauthsecret;
 		var token = req.session.oauthtoken;
-		console.log("aimrun CSCreateSensorModule " + token + " " + secret);
-		exec("aimrun CSCreateSensorModule " + token + " " + secret, function (error, stdout, stderr) {
+		if ((token == "") || (secret == "")) {
+			console.log("Not successful login for CommonSense");
+			res.render('gui', {title: 'AIM GUI', layout: false });
+		} 
+		var fakeid = 1;
+		console.log("aimrun CSCreateSensorModule " + fakeid + " " + token + " " + secret);
+		exec("aimrun CSCreateSensorModule " + fakeid + " " + token + " " + secret, function (error, stdout, stderr) {
 			res.render('gui', {title: 'AIM GUI', layout: false });
 		});
 	}
@@ -105,6 +110,10 @@ function respondFunction(req,res){
 		}
 		// warning: this secret can be temporarily stored, but subsequent token and secret need to go in user db
 		var secret = req.session.oauthsecret;
+		if ((token == "") || (secret == "")) {
+			console.log("Not successful login for CommonSense");
+			res.render('gui', {title: 'AIM GUI', layout: false });
+		} 
 		console.log("aimlogin oauth1 " + token + " " + secret + " " + verifier);
 		exec("aimlogin oauth1 " + token + " " + secret + " " + verifier, function (error, stdout, stderr) {
 			var vars = stdout.split("\n");
