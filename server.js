@@ -112,13 +112,14 @@ function respondFunction(req,res){
 		});
 	}
 	else if (pathname == "/addsensor") {
+		// should absolutely not come from session but from db
 		var secret = req.session.oauthsecret;
 		var token = req.session.oauthtoken;
 		if ((token == "") || (secret == "")) {
 			console.log("Not successful login for CommonSense");
 			res.render('gui', {title: 'AIM GUI', layout: false });
 		} 
-		var fakeid = 1;
+		var fakeid = 1;		
 		console.log("aimrun CSCreateSensorModule " + fakeid + " " + token + " " + secret);
 		exec("aimrun CSCreateSensorModule " + fakeid + " " + token + " " + secret, function (error, stdout, stderr) {
 			res.render('gui', {title: 'AIM GUI', layout: false });
@@ -129,11 +130,12 @@ function respondFunction(req,res){
 		var token = ''; var verifier = '';
 		for (var i = 0; i < oauth_symbols.length; i++) {
 			var str = oauth_symbols[i].split("=");
-			if (i == 0) token = str[1];
-			if (i == 1) verifier = str[1];
+			// get second part of string after the = sign and sanitize it
+			if (i == 0) token = str[1].replace(/[^a-z 0-9]+/gi,'');
+			if (i == 1) verifier = str[1].replace(/[^a-z 0-9]+/gi,'');
 		}
 		// warning: this secret can be temporarily stored, but subsequent token and secret need to go in user db
-		var secret = req.session.oauthsecret;
+		var secret = req.session.oauthsecret.replace(/[^a-z 0-9]+/gi,'');
 		if ((token == "") || (secret == "")) {
 			console.log("Not successful login for CommonSense");
 			res.render('gui', {title: 'AIM GUI', layout: false });
@@ -146,6 +148,7 @@ function respondFunction(req,res){
 				if (i == 0) req.session.oauthtoken = vars[i]; 
 				if (i == 1) req.session.oauthsecret = vars[i]; 
 			}
+			// for now just test common sense by add sensor
 			res.redirect("/addsensor");
 //			res.render('gui', {title: 'AIM GUI', layout: false });
 //			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
@@ -153,11 +156,13 @@ function respondFunction(req,res){
 //			res.end();
 		});
 	}
+	// the /cslogin command comes from CSLoginCommand
 	else if (pathname == "/cslogin") {
+		var param = 'id=123'
 		// this will return a oauth token but should also return a secret
-		console.log("I am in cslogin and will execute 'aimlogin oauth0 " + query + "'");
+		console.log("I am in cslogin and will execute 'aimlogin oauth0 " + param + "'");
 		
-		exec("aimlogin oauth0 " + query, function (error, stdout, stderr) { 
+		exec("aimlogin oauth0 " + param, function (error, stdout, stderr) { 
 			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
 			var vars = stdout.split("\n");
 			for (var i = 0; i < vars.length-1; i++) { 
@@ -346,10 +351,11 @@ app.configure(function(){
 	 * the use of mongooseAuth middleware.
 	 */
 	// STEP 2: Add in the Routing
+	app.use(app.router);
 	app.use(mongooseAuth.middleware());
 	
 	//app.use(express.methodOverride());
-	//app.use(app.router);
+	//
 	//app.use(everyauth.middleware());
 	app.use(express['static'](__dirname + '/public'));
 });
@@ -418,6 +424,7 @@ app.get('/addsensor',function(req,res) {
  * Let's for now redirect to aimlist upon a "Connect" click in a menu.
  */
 app.get('/aimlist',function(req,res){
+	if(req.session.auth && req.session.auth.loggedIn){
 	// don't forget openid
 	
     // if logged in through cs
@@ -425,12 +432,16 @@ app.get('/aimlist',function(req,res){
 	
 	// else
 	// display all modules except cs
-	console.log('I am in /aimlist');
+		console.log('I am in /aimlist');
 
 
 	//res.render('gui', {title: 'AIM GUI', layout: false });
 	//console.log('I am here in aimlist')
-	respondFunction(req,res);
+		respondFunction(req,res);
+	} else{
+		console.log("The user is NOT logged in");
+		res.redirect('/');
+	}
 });
 
 app.get('/aimports',function(req,res){
