@@ -8,7 +8,31 @@ var url = require("url");
 var everyauth = require('everyauth');
 var conf = require('./conf.js');
 
-var first_pass_sass = false;
+/*
+ * requirements for session data storage
+ */
+var mongoose = require('mongoose')
+  , Schema = mongoose.Schema
+  , mongooseAuth = require('mongoose-auth');
+
+var UserSchema = new Schema({})
+  , User;
+
+/*
+ * a configuration object for mongo database start,connection, and session management 
+ */
+var conf_mongo = {
+		  db: {
+		    db: 'myDb',
+		    host: '127.0.0.1',
+		    port: 27017,  // optional, default: 27017
+		    username: 'admin', // optional
+		    password: 'secret', // optional
+		    collection: 'mySessions' // optional, default: sessions
+		  },
+		  secret: '076ee61d63aa10a125ea872411e433b9'
+		};
+
 
 /***************************************************************************************
  * Just monitoring and printing stuff
@@ -231,6 +255,74 @@ everyauth.google
 })
 .redirectPath('/gui');
 
+
+/*
+ * User schema augmentation
+ */
+
+// STEP 1: Schema Decoration and Configuration for the Routing
+UserSchema.plugin(mongooseAuth, {
+    // Here, we attach your User model to every module
+    everymodule: {
+      everyauth: {
+          User: function () {
+            return User;
+          }
+      }
+    }
+
+  , facebook: {
+      everyauth: {
+          myHostname: 'http://local.host:8042'
+        , appId: conf.fb.appId
+        , appSecret: conf.fb.appSecret
+        , redirectPath: '/gui'
+        , findOrCreateUser: function (session, accessTok, accessTokExtra, fbUser) {
+            var promise = this.Promise()
+            , User = this.User()();
+        User.findById(session.auth.userId, function (err, user) {
+          if (err) return promise.fail(err);
+          if (!user) {
+            User.where('password.login', fbUser.email).findOne( function (err, user) {
+              if (err) return promise.fail(err);
+              if (!user) {
+                User.createWithFB(fbUser, accessTok, accessTokExtra.expires, function (err, createdUser) {
+                  if (err) return promise.fail(err);
+                  return promise.fulfill(createdUser);
+                });
+              } else {
+                assignFbDataToUser(user, accessTok, accessTokExtra, fbUser);
+                user.save( function (err, user) {
+                  if (err) return promise.fail(err);
+                  promise.fulfill(user);
+                });
+              }
+            });
+          } else {
+            assignFbDataToUser(user, accessTok, accessTokExtra, fbUser);
+
+            // Save the new data to the user doc in the db
+            user.save( function (err, user) {
+              if (err) return promise.fail(err);
+              promise.fuilfill(user);
+            });
+          }
+        });
+        return promise; // Make sure to return the promise that promises the user
+      }
+      
+      }
+    }
+});
+
+mongoose.model('User', UserSchema);
+
+mongoose.connect('mongodb://localhost/example');
+
+User = mongoose.model('User');
+
+
+
 /***************************************************************************************
  * Create expressjs server
  ***************************************************************************************/
@@ -248,10 +340,17 @@ app.configure(function(){
 	app.use(express.bodyParser());
 	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 	app.use(express.cookieParser());
+	
 	app.use(express.session({secret:'whodunnit'}));
-	app.use(express.methodOverride());
-	app.use(app.router);
-	app.use(everyauth.middleware());
+	/*
+	 * the use of mongooseAuth middleware.
+	 */
+	// STEP 2: Add in the Routing
+	app.use(mongooseAuth.middleware());
+	
+	//app.use(express.methodOverride());
+	//app.use(app.router);
+	//app.use(everyauth.middleware());
 	app.use(express['static'](__dirname + '/public'));
 });
 
@@ -275,6 +374,7 @@ app.get('/', function (req, res) {
 app.get('/gui',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('Render gui');
+		console.log(req.session.auth.toString()+":..."+req.session.auth.loggedIn);
 		res.render('gui', {title: 'AIM GUI', layout: false });
 	} else{
 		console.log("The user is NOT logged in");
@@ -318,7 +418,13 @@ app.get('/addsensor',function(req,res) {
  * Let's for now redirect to aimlist upon a "Connect" click in a menu.
  */
 app.get('/aimlist',function(req,res){
-
+	// don't forget openid
+	
+    // if logged in through cs
+	// display common sense module too
+	
+	// else
+	// display all modules except cs
 	console.log('I am in /aimlist');
 
 
@@ -340,12 +446,17 @@ app.all('/aimrun',function(req,res){
 });
 
 //We use helper functions from the everyauth framework
-everyauth.helpExpress(app);
+//everyauth.helpExpress(app);
+
+
+//STEP 3: Add in Dynamic View Helpers (only if you are using express)
+mongooseAuth.helpExpress(app);
 
 app.listen(8042);
+console.log("ready: http://local.host:%d/", app.address().port);
 
 watchDirectoryAndRecompile("src/sass", compile_sass);
 watchDirectoryAndRecompile("src/haml", compile_haml);
 watchDirectoryAndRecompile("src/coffee", compile_coffee);
 
-console.log("ready: http://local.host:%d/", app.address().port);
+
