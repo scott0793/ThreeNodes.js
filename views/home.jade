@@ -11,6 +11,9 @@
   #google-login
     a(href='/auth/google', style='border: 0px')
       img(style='border: 0px', src='https://www.google.com/favicon.ico')
+  #twitter-login(style='float: left; margin-left: 5px')
+    a(href='/auth/twitter', style='border: 0px')
+      img(style='border: 0px', src='http://github.com/intridea/authbuttons/raw/master/png/twitter_64.png')    
   #openid-login
     form#openid(action='/auth/openid')
       label(for='openid_identifier') OpenID Identifier: &nbsp;
@@ -24,6 +27,9 @@
   - if (everyauth.google)
     h3 Google User Data
     p= JSON.stringify(everyauth.google.user)
+  - if (everyauth.twitter)
+    h3 Twitter User Data
+    p= JSON.stringify(everyauth.twitter.user)  
   
   h3
     a(href='/logout') Logout

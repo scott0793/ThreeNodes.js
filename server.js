@@ -128,6 +128,31 @@ UserSchema.plugin(mongooseAuth, {
       }
 
     }
+  , twitter: {
+      everyauth: {
+          myHostname: 'http://local.host:8042'
+        , consumerKey: conf.twit.consumerKey
+        , consumerSecret: conf.twit.consumerSecret
+        , redirectPath: '/gui'
+        , findOrCreateUser: function (sess, accessTok, accessTokSecret, twitterUser) {
+            var promise = this.Promise()
+            , self = this;
+          this.User()().findOne({'twit.id': twitterUser.id}, function (err, foundUser) {
+            if (err) return promise.fail(err);
+            if (foundUser) {
+            	console.log("Yes, we found you");
+            	return promise.fulfill(foundUser);
+            }
+            console.log("We didn't find the user, so we are CREATING your profile...");
+            self.User()().createWithTwitter(twitterUser, accessTok, accessTokSecret, function (err, createdUser) {
+              if (err) return promise.fail(err);
+              return promise.fulfill(createdUser);
+            });
+          });
+          return promise;
+        }
+      }
+    }
 });
 
 UserSchema.add(
@@ -206,7 +231,7 @@ function respondFunction(req,res){
 			)
 		}
 		else{
-			console.log('I suspect that you even did not log in to the open session id (facebook, google, twitter)');
+			console.log('Please log in via Edit-> CommonSense Login');
 			mode = 0;
 			exec("aimlist "+mode, function (error, stdout, stderr) { 
 				res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
