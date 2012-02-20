@@ -351,7 +351,7 @@ app.configure(function(){
 	 * the use of mongooseAuth middleware.
 	 */
 	// STEP 2: Add in the Routing
-	app.use(app.router);
+	//app.use(app.router);
 	app.use(mongooseAuth.middleware());
 	
 	//app.use(express.methodOverride());
