@@ -5,34 +5,8 @@ var sys = require('sys');
 var exec = require('child_process').exec;
 var watch = require('watch');
 var url = require("url");
-var everyauth = require('everyauth');
+//var everyauth = require('everyauth');
 var conf = require('./conf.js');
-
-/*
- * requirements for session data storage
- */
-var mongoose = require('mongoose')
-  , Schema = mongoose.Schema
-  , mongooseAuth = require('mongoose-auth');
-
-var UserSchema = new Schema({})
-  , User;
-
-/*
- * a configuration object for mongo database start,connection, and session management 
- */
-var conf_mongo = {
-		  db: {
-		    db: 'myDb',
-		    host: '127.0.0.1',
-		    port: 27017,  // optional, default: 27017
-		    username: 'admin', // optional
-		    password: 'secret', // optional
-		    collection: 'mySessions' // optional, default: sessions
-		  },
-		  secret: '076ee61d63aa10a125ea872411e433b9'
-		};
-
 
 /***************************************************************************************
  * Just monitoring and printing stuff
@@ -79,6 +53,128 @@ function watchDirectoryAndRecompile(dir, callback) {
 	});
 }
 
+
+/*
+ * requirements for session data storage
+ */
+
+
+var mongoose = require('mongoose')
+  , Schema = mongoose.Schema
+  , mongooseAuth = require('mongoose-auth');
+
+var UserSchema = new Schema(
+		{
+		})
+  , User
+  , Token
+  , uuid;
+
+
+/*
+ * User schema augmentation
+ */
+
+// STEP 1: Schema Decoration and Configuration for the Routing
+UserSchema.plugin(mongooseAuth, {
+    // Here, we attach your User model to every module
+    everymodule: {
+      everyauth: {
+          User: function () {
+            return User;
+          }
+      }
+    }
+
+  , facebook: {
+	  everyauth: {
+          myHostname: 'http://local.host:8042'
+        , appId: conf.fb.appId
+        , appSecret: conf.fb.appSecret
+        , redirectPath: '/gui'
+        , findOrCreateUser: function (sess, accessTok, accessTokExtra, fbUser) {
+        	
+        	// test creation of uuid on Feb 18th
+        	uuid = fbUser.id;
+        	var promise = this.Promise()
+                , User = this.User()();
+             // TODO Check user in session or request helper first
+             //      e.g., req.user or sess.auth.userId
+        	User.findOne({'fb.id': fbUser.id}, function (err, foundUser) {
+        		if (foundUser) {
+        			console.log("Yes, we found you; your gender is:"+foundUser.fb.gender);
+        			return promise.fulfill(foundUser);
+        			}
+
+        		console.log("We didn't find the user, so we are CREATING your profile...");
+        		User.createWithFB(fbUser, accessTok, accessTokExtra.expires, function (err, createdUser) {
+        			if (err) return promise.fail(err);
+        			return promise.fulfill(createdUser);
+        			}
+        		);
+        		}
+        	);
+        	return promise;
+        	}
+          
+      }
+
+    }
+  , twitter: {
+      everyauth: {
+          myHostname: 'http://local.host:8042'
+        , consumerKey: conf.twit.consumerKey
+        , consumerSecret: conf.twit.consumerSecret
+        , redirectPath: '/gui'
+        , findOrCreateUser: function (sess, accessTok, accessTokSecret, twitterUser) {
+            var promise = this.Promise()
+            , self = this;
+          this.User()().findOne({'twit.id': twitterUser.id}, function (err, foundUser) {
+            if (err) return promise.fail(err);
+            if (foundUser) {
+            	console.log("Yes, we found you");
+            	return promise.fulfill(foundUser);
+            }
+            console.log("We didn't find the user, so we are CREATING your profile...");
+            self.User()().createWithTwitter(twitterUser, accessTok, accessTokSecret, function (err, createdUser) {
+              if (err) return promise.fail(err);
+              return promise.fulfill(createdUser);
+            });
+          });
+          return promise;
+        }
+      }
+    }
+});
+
+UserSchema.add(
+		{
+			token: String
+		  , secret: String
+		}
+		);
+
+
+
+var TokenSchema = new Schema(
+		  {
+			  userSchema   :  [UserSchema]
+		    , token        :  { type: String}
+		    , secret       :  { type: String }
+		  }
+);
+
+
+// create the UserSchema, and TokenSchema Model
+mongoose.model('User', UserSchema);
+mongoose.model('Token', TokenSchema);
+
+mongoose.connect('mongodb://localhost/example');
+
+User = mongoose.model('User');
+Token = mongoose.model('Token');
+
+
 /***************************************************************************************
  * Main routing function
  ***************************************************************************************/
@@ -97,11 +193,167 @@ function respondFunction(req,res){
 	console.log("Request for " + pathname + " " + query + " received.");
 
 	if (query == "List") {
-		exec("aimlist ", function (error, stdout, stderr) { 
+		
+		if (req.user.token){
+			User.findOne({'token': req.user.token},function (err, token) {
+				if (token){
+					console.log('MongoDB detects you and lists your available CS modules here');
+					mode = 1;
+					exec("aimlist "+mode, function (error, stdout, stderr) { 
+						res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+						res.write(stdout);
+						res.end();
+					});
+					console.log(mode);
+					console.log(token.secret);
+					}
+					
+				else{
+					console.log('MongoDB does not detect you and only lists your available AI modules here');
+				    mode = 0;
+				    exec("aimlist "+mode, function (error, stdout, stderr) { 
+						res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+						res.write(stdout);
+						res.end();
+					});
+				}
+					
+				    //console.log(user.fb.id);
+				}
+			)
+		}
+		else{
+			console.log('Please log in via Edit-> CommonSense Login');
+			mode = 0;
+			exec("aimlist "+mode, function (error, stdout, stderr) { 
+				res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+				res.write(stdout);
+				res.end();
+			});
+		}
+		
+		/*
+		if (Token.findbyID())
+			mode = ..
+		else
+		*/	
+		
+		/*
+		var first_user;
+		User.findById(100000534972653, function(user){
+			  first_user = user;
+			});
+		console.log(first_user._id);
+		*/
+		
+		/*
+		User.findOne({id: '100000534972653'}, function (err, user) {
+			  console.log(user);
+			});
+		*/
+		
+		/*
+		User.find({}, function (err, user) {
+			if (user){
+				//console.log(user.fb.id);
+				console.log('success');
+				}
+				
+			else
+				console.log('fail');
+			    //console.log(user.fb.id);
+			});
+		*/
+		
+		/*
+		Token.findOne({'userSchema.fb.id': uuid}, function (err, token) {
+			if (token){
+				console.log(token.userSchema.fb.gender);
+				console.log('success');
+				}
+				
+			else
+				console.log('fail');
+			    //console.log(user.fb.id);
+			});
+		*/
+		
+		//console.log(req.user+"Wow!!");
+		
+		
+			
+		
+		
+		/*
+		Token
+		.findOne({'token': 'YmY3NDM3NWYyNjJjODg0M2RmNzA'})
+		.populate('userSchema')
+		.run(function (err, token) {
+			if (token){
+				setTimeout(console.log('success'),100);
+				
+				console.log(token.userSchema.fb.gender);
+				}
+				
+			else
+				console.log('fail');
+			    //console.log(user.fb.id);
+			}
+		)
+		*/
+		
+		
+		/*
+		User.findOne({'fb.id': uuid}, function (err, user) {
+			if (user){
+				console.log(user.fb.gender);
+				console.log('success');
+				}
+				
+			else
+				console.log('fail');
+			    //console.log(user.fb.id);
+			});
+		*/
+		
+		/*
+		 * workable search!!! But far from being enough
+		 */
+		
+		/*
+		User.findOne({_id: '4f3f9eccaebd5c2e1b000057'}, function (err, user) {
+			if (user){
+				console.log(user.fb.email);
+				console.log('success');
+				}
+				
+			else
+				console.log('fail');
+			    //console.log(user.fb.id);
+			});
+		*/
+		
+		
+		
+		/*
+		exec(setMode(req),exec("aimlist "+mode, function (error, stdout, stderr) { 
+			console.log("aimlist "+mode);
+			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+			res.write(stdout);
+			res.end();
+		}));
+		*/
+		
+		
+		
+		/*
+		console.log("mode:"+mode);
+		exec("aimlist "+mode, function (error, stdout, stderr) { 
 			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
 			res.write(stdout);
 			res.end();
 		});
+		*/
 	}
 	else if (pathname == "/aimports") {
 		console.log("I am in aimports")
@@ -113,6 +365,8 @@ function respondFunction(req,res){
 	}
 	else if (pathname == "/addsensor") {
 		// should absolutely not come from session but from db
+		//var secret = Token.findbyID();
+		//var token = mongodb.oauthtoken;
 		var secret = req.session.oauthsecret;
 		var token = req.session.oauthtoken;
 		if ((token == "") || (secret == "")) {
@@ -143,12 +397,36 @@ function respondFunction(req,res){
 		console.log("aimlogin oauth1 " + token + " " + secret + " " + verifier);
 		exec("aimlogin oauth1 " + token + " " + secret + " " + verifier, function (error, stdout, stderr) {
 			var vars = stdout.split("\n");
+			
+			//var instance = new User();
 			for (var i = 0; i < vars.length-1; i++) { 
 				console.log("t:" + vars[i]);
-				if (i == 0) req.session.oauthtoken = vars[i]; 
-				if (i == 1) req.session.oauthsecret = vars[i]; 
+				
+				// store oauthtoken and oauthsecret
+				
+				
+				//if (i == 0) instance.token = vars[i]; 
+				//if (i == 1) instance.secret = vars[i];
+				if (i == 0) req.user.token = vars[i]; 
+				if (i == 1) req.user.secret = vars[i];
+				
 			}
-			// for now just test common sense by add sensor
+			/*
+			 * error!!!
+			 */
+			//instance.userSchema=User;
+			//Token.userSchema=User;
+			
+			
+			//console.log(req.user.token+":...BE ALERGIC:"+req.user.secret);
+			
+			
+			req.user.save(
+					function (err)
+					{
+					}
+			);
+
 			res.redirect("/addsensor");
 //			res.render('gui', {title: 'AIM GUI', layout: false });
 //			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
@@ -204,136 +482,11 @@ function respondFunction(req,res){
 }
 
 /***************************************************************************************
- * Everyauth
- ***************************************************************************************/
-
-/*
- * General settings
- */
-everyauth.debug = true;
-
-/*
- * An array of users and an index 
- */
-var usersById = {};
-var nextUserId = 0;
-
-function addUser (source, sourceUser) {
-	var user;
-	if (arguments.length === 1) { // password-based
-		user = sourceUser = source;
-		user.id = ++nextUserId;
-		return usersById[nextUserId] = user;
-	} else { // non-password-based
-		user = usersById[++nextUserId] = {id: nextUserId};
-		user[source] = sourceUser;
-	}
-	return user;
-}
-
-var usersByFbId = {};
-var usersByGoogleId = {};
-
-// Function everymodule.findUserById needs to be implemented to be able to use req.user 
-everyauth.everymodule.findUserById( function (id, callback) {
-	callback(null, usersById[id]);
-});
-
-everyauth.facebook
-.appId(conf.fb.appId)
-.appSecret(conf.fb.appSecret)
-.findOrCreateUser( function (session, accessToken, accessTokenExtra, fbUserMetadata) {
-	return usersByFbId[fbUserMetadata.id] ||
-	(usersByFbId[fbUserMetadata.id] = addUser('facebook', fbUserMetadata));
-})
-.redirectPath('/gui');
-
-everyauth.google
-.appId(conf.google.clientId)
-.appSecret(conf.google.clientSecret)
-.scope('https://www.google.com/m8/feeds/')
-.findOrCreateUser( function (sess, accessToken, extra, googleUser) {
-	googleUser.refreshToken = extra.refresh_token;
-	googleUser.expiresIn = extra.expires_in;
-	return usersByGoogleId[googleUser.id] || 
-	(usersByGoogleId[googleUser.id] = addUser('google', googleUser));
-})
-.redirectPath('/gui');
-
-
-/*
- * User schema augmentation
- */
-
-// STEP 1: Schema Decoration and Configuration for the Routing
-UserSchema.plugin(mongooseAuth, {
-    // Here, we attach your User model to every module
-    everymodule: {
-      everyauth: {
-          User: function () {
-            return User;
-          }
-      }
-    }
-
-  , facebook: {
-      everyauth: {
-          myHostname: 'http://local.host:8042'
-        , appId: conf.fb.appId
-        , appSecret: conf.fb.appSecret
-        , redirectPath: '/gui'
-        , findOrCreateUser: function (session, accessTok, accessTokExtra, fbUser) {
-            var promise = this.Promise()
-            , User = this.User()();
-        User.findById(session.auth.userId, function (err, user) {
-          if (err) return promise.fail(err);
-          if (!user) {
-            User.where('password.login', fbUser.email).findOne( function (err, user) {
-              if (err) return promise.fail(err);
-              if (!user) {
-                User.createWithFB(fbUser, accessTok, accessTokExtra.expires, function (err, createdUser) {
-                  if (err) return promise.fail(err);
-                  return promise.fulfill(createdUser);
-                });
-              } else {
-                assignFbDataToUser(user, accessTok, accessTokExtra, fbUser);
-                user.save( function (err, user) {
-                  if (err) return promise.fail(err);
-                  promise.fulfill(user);
-                });
-              }
-            });
-          } else {
-            assignFbDataToUser(user, accessTok, accessTokExtra, fbUser);
-
-            // Save the new data to the user doc in the db
-            user.save( function (err, user) {
-              if (err) return promise.fail(err);
-              promise.fuilfill(user);
-            });
-          }
-        });
-        return promise; // Make sure to return the promise that promises the user
-      }
-      
-      }
-    }
-});
-
-mongoose.model('User', UserSchema);
-
-mongoose.connect('mongodb://localhost/example');
-
-User = mongoose.model('User');
-
-
-
-/***************************************************************************************
  * Create expressjs server
  ***************************************************************************************/
 
 /**
- * Standard server started. It starts the everyauth middleware. 
+ * Standard server started. It starts the mongoose-auth middleware with many many other configurations such as routing (very important). 
  */
 var app = express.createServer();
 
@@ -341,22 +494,16 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 app.configure(function(){
-	console.log('Configure nodejs');
+	console.log('Configuring the express server');
 	app.use(express.bodyParser());
 	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 	app.use(express.cookieParser());
 	
 	app.use(express.session({secret:'whodunnit'}));
-	/*
-	 * the use of mongooseAuth middleware.
-	 */
-	// STEP 2: Add in the Routing
-	//app.use(app.router);
-	app.use(mongooseAuth.middleware());
-	
-	//app.use(express.methodOverride());
-	//
-	//app.use(everyauth.middleware());
+	// STEP 2: Add in the Routing: the use of mongoose-auth middleware
+    app.use(mongooseAuth.middleware());
+	app.use(express.methodOverride());
+	app.use(app.router);	
 	app.use(express['static'](__dirname + '/public'));
 });
 
@@ -364,7 +511,12 @@ app.configure(function(){
 //app.use("/public", express.static(__dirname + '/public'));
 
 /**
- * The entry point for the routing, we just render view/home.jade which shows a 
+ * all the the below functions are for different server responses according to different "PATH"
+ */
+
+
+/**
+ * The root response: the entry point for the routing, we just render view/home.jade which shows a 
  * login window for OpenID via Facebook/Google.
  */
 app.get('/', function (req, res) {
@@ -378,14 +530,16 @@ app.get('/', function (req, res) {
  * to by default. After login via oauth the user can also see CommonSense modules. 
  */
 app.get('/gui',function(req,res){
+	
 	if(req.session.auth && req.session.auth.loggedIn){
-		console.log('Render gui');
-		console.log(req.session.auth.toString()+":..."+req.session.auth.loggedIn);
+		console.log('Rendering gui');
+		console.log(":..."+req.session.auth.loggedIn);
 		res.render('gui', {title: 'AIM GUI', layout: false });
 	} else{
 		console.log("The user is NOT logged in");
 		res.redirect('/');
 	}
+	
 });
 
 app.get('/cslogin',function(req,res) {
@@ -413,6 +567,7 @@ app.get('/cslogin2',function(req,res) {
  */
 app.get('/addsensor',function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
+		//if (loggedInCS())
 		respondFunction(req,res);
 	} else{
 		console.log("The user is NOT logged in");
@@ -426,14 +581,18 @@ app.get('/addsensor',function(req,res) {
 app.get('/aimlist',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
 	// don't forget openid
-	
+	//	if (Token.find == '' )
+			// show non-cs only
+	//	else 
+			// show all modules, also cs
+		
+		
     // if logged in through cs
 	// display common sense module too
 	
 	// else
 	// display all modules except cs
 		console.log('I am in /aimlist');
-
 
 	//res.render('gui', {title: 'AIM GUI', layout: false });
 	//console.log('I am here in aimlist')
@@ -445,19 +604,26 @@ app.get('/aimlist',function(req,res){
 });
 
 app.get('/aimports',function(req,res){
-
-	console.log('I am in /aimports');
-	respondFunction(req,res);
+	if(req.session.auth && req.session.auth.loggedIn){
+		console.log('I am in /aimports');
+		respondFunction(req,res);
+	} else{
+		console.log("The user is NOT logged in");
+		res.redirect('/');
+	}
 });
 
 app.all('/aimrun',function(req,res){
-
-	console.log('I am in /aimrun');
-	respondFunction(req,res);
+	if(req.session.auth && req.session.auth.loggedIn){
+		console.log('I am in /aimrun');
+		respondFunction(req,res);
+	} else{
+		console.log("The user is NOT logged in");
+		res.redirect('/');
+	}
 });
 
-//We use helper functions from the everyauth framework
-//everyauth.helpExpress(app);
+
 
 
 //STEP 3: Add in Dynamic View Helpers (only if you are using express)
@@ -469,5 +635,3 @@ console.log("ready: http://local.host:%d/", app.address().port);
 watchDirectoryAndRecompile("src/sass", compile_sass);
 watchDirectoryAndRecompile("src/haml", compile_haml);
 watchDirectoryAndRecompile("src/coffee", compile_coffee);
-
-
