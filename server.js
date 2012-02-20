@@ -1,75 +1,37 @@
-//Load all dependencies, install them via npm 
+/**
+ * Load all dependencies, install them via npm
+ */ 
 var express = require('express');
 var http = require('http');
-var sys = require('sys');
+var sys = require('util');
 var exec = require('child_process').exec;
 var watch = require('watch');
 var url = require("url");
-//var everyauth = require('everyauth');
 var conf = require('./conf.js');
 
 /***************************************************************************************
- * Just monitoring and printing stuff
+ * Global variables for our server
  ***************************************************************************************/
 
-function puts(error, stdout, stderr) { 
-	console.log(stdout);
-	console.log("Entered!");
-}
+var server_name = 'local.host';
+var port_id = '8042';
+var full_server_name = 'http://' + server_name + ':' + port_id;
 
-function compile_sass() {
-	console.log("sass");
-	exec("compass compile", puts);
-}
+/***************************************************************************************
+ * Database management
+ ***************************************************************************************/
 
-function compile_haml() {
-	exec("haml src/haml/index.haml public/index.html", puts);
-	console.log("haml");
-	exec("haml src/haml/test.haml public/test.html", puts);
-}
-
-function compile_coffee() {
-	console.log("coffee_script");
-	exec("cake build", puts);
-}
-
-function watchDirectoryAndRecompile(dir, callback) {
-	//console.log("watch:"+dir+" "+callback);
-	watch.watchTree(dir, {'ignoreDotFiles' : true}, function (f, curr, prev) {
-		//console.log("what is it? f:"+f+" curr:"+curr+" prev:"+prev);
-		if (typeof f == "object" && prev === null && curr === null) {
-			// Finished walking the tree
-			//callback();
-		} else if (prev === null) {
-			// f is a new file
-			callback();
-		} else if (curr.nlink === 0) {
-			// f was removed
-			callback();
-		} else {
-			// f was changed
-			callback();
-		}
-	});
-}
-
-
-/*
- * requirements for session data storage
+/**
+ * We need a database to store information about our users. We use a mongodb.
  */
-
-
 var mongoose = require('mongoose')
-  , Schema = mongoose.Schema
-  , mongooseAuth = require('mongoose-auth');
+, Schema = mongoose.Schema
+, mongooseAuth = require('mongoose-auth');
 
-var UserSchema = new Schema(
-		{
-		})
+var UserSchema = new Schema({})
   , User
   , Token
   , uuid;
-
 
 /*
  * User schema augmentation
@@ -88,7 +50,7 @@ UserSchema.plugin(mongooseAuth, {
 
   , facebook: {
 	  everyauth: {
-          myHostname: 'http://local.host:8042'
+          myHostname: full_server_name
         , appId: conf.fb.appId
         , appSecret: conf.fb.appSecret
         , redirectPath: '/gui'
@@ -122,7 +84,7 @@ UserSchema.plugin(mongooseAuth, {
     }
   , twitter: {
       everyauth: {
-          myHostname: 'http://local.host:8042'
+          myHostname: full_server_name
         , consumerKey: conf.twit.consumerKey
         , consumerSecret: conf.twit.consumerSecret
         , redirectPath: '/gui'
@@ -154,8 +116,6 @@ UserSchema.add(
 		}
 		);
 
-
-
 var TokenSchema = new Schema(
 		  {
 			  userSchema   :  [UserSchema]
@@ -169,7 +129,7 @@ var TokenSchema = new Schema(
 mongoose.model('User', UserSchema);
 mongoose.model('Token', TokenSchema);
 
-mongoose.connect('mongodb://localhost/example');
+mongoose.connect('mongodb://' + server_name + '/example');
 
 User = mongoose.model('User');
 Token = mongoose.model('Token');
@@ -183,7 +143,6 @@ Token = mongoose.model('Token');
  * The router function. This needs to be "upgraded"... Things to do:
  * 1.) make it an actual router file
  * 2.) update it to coffeescript
- * 3.) remove all references to directory management (watching etc.) 
  * Remark: if you add things here to the if-else statements, make sure you also add them
  * as app.get() targets, or you won't be able to "GET" them.
  */
@@ -217,8 +176,6 @@ function respondFunction(req,res){
 						res.end();
 					});
 				}
-					
-				    //console.log(user.fb.id);
 				}
 			)
 		}
@@ -232,128 +189,6 @@ function respondFunction(req,res){
 			});
 		}
 		
-		/*
-		if (Token.findbyID())
-			mode = ..
-		else
-		*/	
-		
-		/*
-		var first_user;
-		User.findById(100000534972653, function(user){
-			  first_user = user;
-			});
-		console.log(first_user._id);
-		*/
-		
-		/*
-		User.findOne({id: '100000534972653'}, function (err, user) {
-			  console.log(user);
-			});
-		*/
-		
-		/*
-		User.find({}, function (err, user) {
-			if (user){
-				//console.log(user.fb.id);
-				console.log('success');
-				}
-				
-			else
-				console.log('fail');
-			    //console.log(user.fb.id);
-			});
-		*/
-		
-		/*
-		Token.findOne({'userSchema.fb.id': uuid}, function (err, token) {
-			if (token){
-				console.log(token.userSchema.fb.gender);
-				console.log('success');
-				}
-				
-			else
-				console.log('fail');
-			    //console.log(user.fb.id);
-			});
-		*/
-		
-		//console.log(req.user+"Wow!!");
-		
-		
-			
-		
-		
-		/*
-		Token
-		.findOne({'token': 'YmY3NDM3NWYyNjJjODg0M2RmNzA'})
-		.populate('userSchema')
-		.run(function (err, token) {
-			if (token){
-				setTimeout(console.log('success'),100);
-				
-				console.log(token.userSchema.fb.gender);
-				}
-				
-			else
-				console.log('fail');
-			    //console.log(user.fb.id);
-			}
-		)
-		*/
-		
-		
-		/*
-		User.findOne({'fb.id': uuid}, function (err, user) {
-			if (user){
-				console.log(user.fb.gender);
-				console.log('success');
-				}
-				
-			else
-				console.log('fail');
-			    //console.log(user.fb.id);
-			});
-		*/
-		
-		/*
-		 * workable search!!! But far from being enough
-		 */
-		
-		/*
-		User.findOne({_id: '4f3f9eccaebd5c2e1b000057'}, function (err, user) {
-			if (user){
-				console.log(user.fb.email);
-				console.log('success');
-				}
-				
-			else
-				console.log('fail');
-			    //console.log(user.fb.id);
-			});
-		*/
-		
-		
-		
-		/*
-		exec(setMode(req),exec("aimlist "+mode, function (error, stdout, stderr) { 
-			console.log("aimlist "+mode);
-			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-			res.write(stdout);
-			res.end();
-		}));
-		*/
-		
-		
-		
-		/*
-		console.log("mode:"+mode);
-		exec("aimlist "+mode, function (error, stdout, stderr) { 
-			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-			res.write(stdout);
-			res.end();
-		});
-		*/
 	}
 	else if (pathname == "/aimports") {
 		console.log("I am in aimports")
@@ -361,22 +196,6 @@ function respondFunction(req,res){
 			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
 			res.write(stdout);
 			res.end();
-		});
-	}
-	else if (pathname == "/addsensor") {
-		// should absolutely not come from session but from db
-		//var secret = Token.findbyID();
-		//var token = mongodb.oauthtoken;
-		var secret = req.session.oauthsecret;
-		var token = req.session.oauthtoken;
-		if ((token == "") || (secret == "")) {
-			console.log("Not successful login for CommonSense");
-			res.render('gui', {title: 'AIM GUI', layout: false });
-		} 
-		var fakeid = 1;		
-		console.log("aimrun CSCreateSensorModule " + fakeid + " " + token + " " + secret);
-		exec("aimrun CSCreateSensorModule " + fakeid + " " + token + " " + secret, function (error, stdout, stderr) {
-			res.render('gui', {title: 'AIM GUI', layout: false });
 		});
 	}
 	else if (pathname == "/cslogin2") {
@@ -401,37 +220,17 @@ function respondFunction(req,res){
 			//var instance = new User();
 			for (var i = 0; i < vars.length-1; i++) { 
 				console.log("t:" + vars[i]);
-				
 				// store oauthtoken and oauthsecret
-				
-				
-				//if (i == 0) instance.token = vars[i]; 
-				//if (i == 1) instance.secret = vars[i];
 				if (i == 0) req.user.token = vars[i]; 
 				if (i == 1) req.user.secret = vars[i];
 				
 			}
-			/*
-			 * error!!!
-			 */
-			//instance.userSchema=User;
-			//Token.userSchema=User;
-			
-			
-			//console.log(req.user.token+":...BE ALERGIC:"+req.user.secret);
-			
-			
-			req.user.save(
-					function (err)
-					{
-					}
-			);
+			req.user.save(function (err) { } );
 
-			res.redirect("/addsensor");
-//			res.render('gui', {title: 'AIM GUI', layout: false });
-//			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-//			res.write(stdout);
-//			res.end();
+			res.render('gui', {title: 'AIM GUI', layout: false });
+			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+			res.write(stdout);
+			res.end();
 		});
 	}
 	// the /cslogin command comes from CSLoginCommand
@@ -466,6 +265,11 @@ function respondFunction(req,res){
 			//console.log(body_split[0]);
 			for (var i = 0; i<body_split.length-1;i++){
 				console.log(body_split[i]);
+				// sanitizing
+				// first check if it starts with "aim"...
+				// aimrun arg0 arg1
+				// aimconnect arg0 arg1 arg2 arg3
+				
 				// execute aimrun, aimconnect etc. 
 				exec(body_split[i], function (error, stdout, stderr) { 
 					/*
@@ -507,8 +311,6 @@ app.configure(function(){
 	app.use(express['static'](__dirname + '/public'));
 });
 
-//"mount" the static middleware so we can preface static files with /public   ?? Do we need to mount again??  Scott doesn't think so, remove it temporarily.
-//app.use("/public", express.static(__dirname + '/public'));
 
 /**
  * all the the below functions are for different server responses according to different "PATH"
@@ -530,7 +332,6 @@ app.get('/', function (req, res) {
  * to by default. After login via oauth the user can also see CommonSense modules. 
  */
 app.get('/gui',function(req,res){
-	
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('Rendering gui');
 		console.log(":..."+req.session.auth.loggedIn);
@@ -542,6 +343,12 @@ app.get('/gui',function(req,res){
 	
 });
 
+/**
+ * This is the first login step if people want to log in to CommonSense. This is not
+ * mandatory, we might provide other ways of having data input (for example from the web).
+ * This route is initiated when the user manualyl clicks on Login for CommonSense in
+ * the menu bar. 
+ */
 app.get('/cslogin',function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('Logging in');
@@ -552,6 +359,11 @@ app.get('/cslogin',function(req,res) {
 	}
 });
 
+/**
+ * The second step of logging in. This is when the CommonSense server returns a URL
+ * with temporary key and secret tokens which subsequently needs to be used by the modules
+ * started by the user to access the data from that user.
+ */
 app.get('/cslogin2',function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('Logging in, 2nd stage');
@@ -562,40 +374,13 @@ app.get('/cslogin2',function(req,res) {
 	}
 });
 
-/**
- * Temporary test
- */
-app.get('/addsensor',function(req,res) {
-	if(req.session.auth && req.session.auth.loggedIn){
-		//if (loggedInCS())
-		respondFunction(req,res);
-	} else{
-		console.log("The user is NOT logged in");
-		res.redirect('/');
-	}
-});
 
 /**
  * Let's for now redirect to aimlist upon a "Connect" click in a menu.
  */
 app.get('/aimlist',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
-	// don't forget openid
-	//	if (Token.find == '' )
-			// show non-cs only
-	//	else 
-			// show all modules, also cs
-		
-		
-    // if logged in through cs
-	// display common sense module too
-	
-	// else
-	// display all modules except cs
 		console.log('I am in /aimlist');
-
-	//res.render('gui', {title: 'AIM GUI', layout: false });
-	//console.log('I am here in aimlist')
 		respondFunction(req,res);
 	} else{
 		console.log("The user is NOT logged in");
@@ -613,6 +398,9 @@ app.get('/aimports',function(req,res){
 	}
 });
 
+/**
+ * Captures GET and POST requests (because of app.all).
+ */
 app.all('/aimrun',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('I am in /aimrun');
@@ -623,15 +411,16 @@ app.all('/aimrun',function(req,res){
 	}
 });
 
-
+/**
+ * Only capture GET requests, else way the GUI is not rendered. :-)
+ */
+//app.get('*', function(req,res) {
+//	res.redirect('/');
+//});
 
 
 //STEP 3: Add in Dynamic View Helpers (only if you are using express)
 mongooseAuth.helpExpress(app);
 
-app.listen(8042);
-console.log("ready: http://local.host:%d/", app.address().port);
-
-watchDirectoryAndRecompile("src/sass", compile_sass);
-watchDirectoryAndRecompile("src/haml", compile_haml);
-watchDirectoryAndRecompile("src/coffee", compile_coffee);
+app.listen(port_id);
+console.log("ready: http://%s:%d/", server_name, app.address().port);
