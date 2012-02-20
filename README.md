@@ -1,36 +1,33 @@
-#ThreeNodes.js
-<img src="http://github.com/idflood/ThreeNodes.js/raw/master/misc/screenshot1.jpg" width="852" height="436" alt="screenshot version 0.02">
+# AIM on top of ThreeNodes.js
 
-This is an attempt to make something like "vvvv" in javascript, html and webgl.
+AIM, Artificial Intelligence Modules, is a GUI (graphical user interface) for connecting AI modules with each other. We thankfully make use of the ThreeNodes.js GUI (a link can be found below). Instead of data processing in the browser or on the server you connect to, the AIM GUI allows you to mix-and-match modules on a remote server where data is passed between these modules over for example TCP/IP sockets.
 
+## Live demo of ThreeNodes.js
 Live demo: http://idflood.github.com/ThreeNodes.js/
 
 ## Key principles
-- modular
-- creating a custom "node" must be as easy as possible
-- should be possible to switch interface for live performance (selection of buttons/toggle)
-
-## Some ideas
-- local timelines ?
-- grouping (multiple nodes in one, possibility to have multiple instances)
-- some kind of library panel like in flash to manage images/fonts/groups... 
-- preloader
-- maybe add processingjs.org as an alternative to three.js
+- javascript server for AI module management
+- wrappers to connect to sensors/actuators online
+- ability to connect AI modules that conform to a certain middleware (currently YARP), extensions are easy
 
 ## Development setup
-This will automatically compile coffescript files to javascript, sass to css and haml to html.
+Installation is quite involved but is much easier using "npm":
 
 1. install node.js 0.4.x (http://nodejs.org/)
 2. install npm (https://github.com/isaacs/npm)
 3. install compass/coffeescript (http://compass-style.org/ and http://jashkenas.github.com/coffee-script/)
 4. cd in ThreeNodes
-5. npm install -d
+5. npm install require express haml jade everyauth sass vogue watch mongoose-auth
+
+You can check the result in the directory node_modules
 
 ## Usage
 1. cd in ThreeNodes
 2. node server.js
-3. with firefox or chrome go to http://localhost:8042/
-4. allow this site to create popups (for webglrender node)
+3. with firefox or chrome go to http://local.host:8042/
 
-## Howto create a simple scene
-First, create a webglrenderer node. Then add a scene and connect it to the "scene" of the webgl node. On the scene children you would connect a "merge" and to it a mesh. With that there should be a red cube showing in the renderer window.
+## Copyrights
+The copyrights for ThreeNodes.js belong to idflood, the author. The copyrights (2012) for the additional functionality belongs to: 
+  Authors: Anne van Rossum, Hongliang (Scott) Guo
+  Almende B.V.
+  Rotterdam, The Netherlands
