@@ -36,6 +36,7 @@ define [
       
     applyContext: (v) ->
       if v && !v.context
+        # alert "applying context"
         v.context = @context
         if v.onRegister
           v.onRegister()

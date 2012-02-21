@@ -41,8 +41,8 @@ define [
       
       alert node_NameAndConnections
       
-      
-      url = "http://local.host:8042/aimrun?123"
+      full_server_name = "http://local.host:8042"
+      url = full_server_name+"/aimrun?123"
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       ajax.open 'POST', url, true
       ajax.send node_NameAndConnections
