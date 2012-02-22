@@ -3,6 +3,7 @@ define [
   'Underscore', 
   'Backbone',
   "text!templates/node.tmpl.html",
+  "order!aim/conf.js",
   "order!libs/jquery.tmpl.min",
   "order!libs/jquery.contextMenu",
   "order!libs/jquery-ui/js/jquery-ui-1.9m6.min",
@@ -10,7 +11,7 @@ define [
   'order!threenodes/core/NodeConnection',
   'order!threenodes/core/NodeView',
   'order!threenodes/utils/Utils',
-], ($, _, Backbone, _view_node_template) ->
+], ($, _, Backbone, _view_node_template, conf) ->
   "use strict"
   ThreeNodes.field_click_1 = false
   ThreeNodes.selected_nodes = $([])
@@ -348,9 +349,9 @@ define [
       # require (['../../../../conf.js'], function(){})
       # console.log(conf.server.server_name)
       # url = "http://local.host:8042/aimports?"+@inner_name
-      full_server_name = "http://local.host:8042"
+      # full_server_name = "http://local.host:8042"
       # console.log conf.server.server_name
-      url = full_server_name+"/aimports?"+@inner_name
+      url = conf.full_server_name+"/aimports?"+@inner_name
       # alert url
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
