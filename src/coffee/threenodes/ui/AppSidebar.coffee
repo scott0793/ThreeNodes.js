@@ -2,8 +2,9 @@ define [
   'jQuery',
   'Underscore', 
   'Backbone',
+  "order!aim/conf.js",
   "order!libs/jquery.contextMenu",
-], ($, _, Backbone) ->
+], ($, _, Backbone, conf) ->
   "use strict"
   class ThreeNodes.AppSidebar
     constructor: () ->
@@ -66,8 +67,8 @@ define [
       self = this
       $container = $("#tab-new")
       
-      full_server_name = "http://local.host:8042"
-      url = full_server_name + "/aimlist?List"
+      #full_server_name = "http://local.host:8042"
+      url = conf.full_server_name + "/aimlist?List"
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       ajax.open 'GET', url, true

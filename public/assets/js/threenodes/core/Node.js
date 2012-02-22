@@ -2,7 +2,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   __hasProp = Object.prototype.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", 'require', "order!libs/jquery.tmpl.min", "order!libs/jquery.contextMenu", "order!libs/jquery-ui/js/jquery-ui-1.9m6.min", 'order!threenodes/core/NodeFieldRack', 'order!threenodes/core/NodeConnection', 'order!threenodes/core/NodeView', 'order!threenodes/utils/Utils'], function($, _, Backbone, _view_node_template) {
+define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", "order!aim/conf.js", "order!libs/jquery.tmpl.min", "order!libs/jquery.contextMenu", "order!libs/jquery-ui/js/jquery-ui-1.9m6.min", 'order!threenodes/core/NodeFieldRack', 'order!threenodes/core/NodeConnection', 'order!threenodes/core/NodeView', 'order!threenodes/utils/Utils'], function($, _, Backbone, _view_node_template, conf) {
   "use strict";  ThreeNodes.field_click_1 = false;
   ThreeNodes.selected_nodes = $([]);
   ThreeNodes.nodes_offset = {
@@ -484,9 +484,8 @@ define(['jQuery', 'Underscore', 'Backbone', "text!templates/node.tmpl.html", 're
     }
 
     AIMModule.prototype.set_fields = function() {
-      var ajax, full_server_name, inner_rack, serverResponse, url;
-      full_server_name = "http://local.host:8042";
-      url = full_server_name + "/aimports?" + this.inner_name;
+      var ajax, inner_rack, serverResponse, url;
+      url = conf.full_server_name + "/aimports?" + this.inner_name;
       serverResponse = null;
       ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
       ajax.open('GET', url, true);
