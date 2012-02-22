@@ -6,7 +6,7 @@ var http = require('http');
 var sys = require('util');
 var exec = require('child_process').exec;
 var url = require("url");
-var conf = require("./aim/conf.js");
+var conf = require("./conf.js");
 
 /***************************************************************************************
  * Database management
@@ -245,6 +245,8 @@ function respondFunction(req,res){
 				// aimrun arg0 arg1
 				// aimconnect arg0 arg1 arg2 arg3
 				var aimcmd = body_split[i].replace(/[^a-z 0-9]+/gi,'');
+				//check for CS....Module
+				// and append token and secret to argument list
 				
 				// execute aimrun, aimconnect etc. 
 				exec(aimcmd, function (error, stdout, stderr) {
