@@ -40,9 +40,8 @@ define [
         # alert "To Node name: "+ node_connection.to_field.node.typename()
         node_NameAndConnections = node_NameAndConnections + "aimconnect "+node_connection.from_field.node.typename()+node_connection.from_field.node.nid+" "+node_connection.from_field.name+" "+node_connection.to_field.node.typename()+node_connection.to_field.node.nid+" "+node_connection.to_field.name+"\n"
       
-      alert node_NameAndConnections
-      alert conf.full_server_name
-      # full_server_name = "http://local.host:8042"
+      #alert node_NameAndConnections
+      #alert conf.full_server_name
       url = conf.full_server_name+"/aimrun?123"
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       ajax.open 'POST', url, true
