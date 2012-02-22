@@ -1,3 +1,5 @@
+conf = require('aim/conf.js');
+
 define [
   'jQuery',
   'Underscore', 
