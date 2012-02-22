@@ -165,7 +165,7 @@ define [
       true
     
     add_center_textfield: (field) =>
-      $(".options .center", @node.main_view).append("<div><input type='text' id='f-txt-input-#{field.fid}' /></div>")
+      $(".options .center", @node.main_view).append("<div><input type='text' id='f-txt-input-#{field.fid}' name='sensor_id' /></div>")
       f_in = $("#f-txt-input-#{field.fid}")
       field.on_value_update_hooks.update_center_textfield = (v) ->
         if v != null

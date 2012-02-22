@@ -5,17 +5,18 @@ var express = require('express');
 var http = require('http');
 var sys = require('util');
 var exec = require('child_process').exec;
-var watch = require('watch');
 var url = require("url");
 var conf = require('./conf.js');
 
 /***************************************************************************************
  * Global variables for our server
  ***************************************************************************************/
-
+/*
 var server_name = 'local.host';
 var port_id = '8042';
 var full_server_name = 'http://' + server_name + ':' + port_id;
+*/
+
 
 /***************************************************************************************
  * Database management
@@ -29,9 +30,7 @@ var mongoose = require('mongoose')
 , mongooseAuth = require('mongoose-auth');
 
 var UserSchema = new Schema({})
-  , User
-  , Token
-  , uuid;
+  , User;
 
 /*
  * User schema augmentation
@@ -50,14 +49,11 @@ UserSchema.plugin(mongooseAuth, {
 
   , facebook: {
 	  everyauth: {
-          myHostname: full_server_name
+          myHostname: conf.server.full_server_name
         , appId: conf.fb.appId
         , appSecret: conf.fb.appSecret
         , redirectPath: '/gui'
         , findOrCreateUser: function (sess, accessTok, accessTokExtra, fbUser) {
-        	
-        	// test creation of uuid on Feb 18th
-        	uuid = fbUser.id;
         	var promise = this.Promise()
                 , User = this.User()();
              // TODO Check user in session or request helper first
@@ -84,7 +80,7 @@ UserSchema.plugin(mongooseAuth, {
     }
   , twitter: {
       everyauth: {
-          myHostname: full_server_name
+          myHostname: conf.server.full_server_name
         , consumerKey: conf.twit.consumerKey
         , consumerSecret: conf.twit.consumerSecret
         , redirectPath: '/gui'
@@ -116,24 +112,13 @@ UserSchema.add(
 		}
 		);
 
-var TokenSchema = new Schema(
-		  {
-			  userSchema   :  [UserSchema]
-		    , token        :  { type: String}
-		    , secret       :  { type: String }
-		  }
-);
 
-
-// create the UserSchema, and TokenSchema Model
+// create the UserSchema Model of mongodb
 mongoose.model('User', UserSchema);
-mongoose.model('Token', TokenSchema);
 
-mongoose.connect('mongodb://' + server_name + '/example');
+mongoose.connect('mongodb://' + conf.server.server_name + '/example');
 
 User = mongoose.model('User');
-Token = mongoose.model('Token');
-
 
 /***************************************************************************************
  * Main routing function
@@ -141,7 +126,7 @@ Token = mongoose.model('Token');
 
 /**
  * The router function. This needs to be "upgraded"... Things to do:
- * 1.) make it an actual router file
+ * 1.) make it an actual router file!!!
  * 2.) update it to coffeescript
  * Remark: if you add things here to the if-else statements, make sure you also add them
  * as app.get() targets, or you won't be able to "GET" them.
@@ -271,13 +256,7 @@ function respondFunction(req,res){
 				// aimconnect arg0 arg1 arg2 arg3
 				
 				// execute aimrun, aimconnect etc. 
-				exec(body_split[i], function (error, stdout, stderr) { 
-					/*
-            		res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-            		res.write(stdout);
-            		res.end();
-					 */
-					//console.log(body_split[i]);
+				exec(body_split[i], function (error, stdout, stderr) {
 					console.log(stdout);
 				});
 			}
@@ -334,13 +313,11 @@ app.get('/', function (req, res) {
 app.get('/gui',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
 		console.log('Rendering gui');
-		console.log(":..."+req.session.auth.loggedIn);
 		res.render('gui', {title: 'AIM GUI', layout: false });
 	} else{
 		console.log("The user is NOT logged in");
 		res.redirect('/');
 	}
-	
 });
 
 /**
@@ -376,7 +353,7 @@ app.get('/cslogin2',function(req,res) {
 
 
 /**
- * Let's for now redirect to aimlist upon a "Connect" click in a menu.
+ * Let's for now redirect to aimlist.
  */
 app.get('/aimlist',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
@@ -414,13 +391,23 @@ app.all('/aimrun',function(req,res){
 /**
  * Only capture GET requests, else way the GUI is not rendered. :-)
  */
-//app.get('*', function(req,res) {
-//	res.redirect('/');
-//});
+
+
+app.get('/:id?', function(req,res) {
+	if(req.session.auth && req.session.auth.loggedIn){
+		res.redirect('/');
+	} else{
+		//console.log("The user is NOT logged in!!!");
+		res.redirect('/');
+	}
+});
+
+
 
 
 //STEP 3: Add in Dynamic View Helpers (only if you are using express)
 mongooseAuth.helpExpress(app);
 
-app.listen(port_id);
-console.log("ready: http://%s:%d/", server_name, app.address().port);
+app.listen(conf.server.port_id);
+//console.log(conf.server.server_name);
+console.log("ready: http://%s:%d/", conf.server.server_name, app.address().port);

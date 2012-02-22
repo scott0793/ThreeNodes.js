@@ -66,8 +66,8 @@ define [
       self = this
       $container = $("#tab-new")
       
-      
-      url = "http://local.host:8042/aimlist?List"
+      full_server_name = "http://local.host:8042"
+      url = full_server_name + "/aimlist?List"
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       ajax.open 'GET', url, true

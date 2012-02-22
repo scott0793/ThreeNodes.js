@@ -23,6 +23,7 @@ define [
         n = new ThreeNodes.nodes.types[component][type](x, y, inXML, inJSON)
       @context.injector.applyContext(n)
       @nodes.push(n)
+      @nodes_by_nid[n.nid] = n
       n
     
     get_component_by_type: (type) =>

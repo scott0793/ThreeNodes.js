@@ -19,9 +19,10 @@ define [
   ThreeNodes.nodes_offset =
     top: 0
     left: 0
-  
+	
   class ThreeNodes.NodeBase
     constructor: (@x = 0, @y = 0, @inXML = false, @inJSON = false) ->
+      alert "I am in NodeBase" + @x + @y + @inXML + @inJSON
       @auto_evaluate = false
       @delays_output = false
       @dirty = true
@@ -82,7 +83,7 @@ define [
     typename: => String(@constructor.name)
     
     init_main_view: () =>
-      #alert "init main view"
+      # alert "init main view"
       @main_view = $.tmpl(_view_node_template, this)
       @main_view.data("object", this)
       @container.append(@main_view)
@@ -93,7 +94,7 @@ define [
         name: @name
         rack: @rack
         apptimeline: @apptimeline
-        
+      # alert "Injector!"  
       @context.injector.applyContext @view
     
     loadAnimation: () =>
@@ -316,13 +317,22 @@ define [
 
   class ThreeNodes.AIMModule extends ThreeNodes.NodeBase
     constructor: (@x = 0, @y = 0, @name = "RandomModule",@inXML = false, @inJSON = false) ->
+      ###
+      alert "I am in AIMModule" + @x + @name
+      super @x @y @inXML @inJSON
+      alert "I am in AIMModule" + @x + @inXML
+      super
+        x1: @x
+        y: @y
+        inXML: @inXML
+        inJSON: @inJSON
+      ###
       @auto_evaluate = false
       @delays_output = false
       @dirty = true
-
-      @inner_name = @name
-      #alert @inner_name
-      
+      @anim_obj = {}
+      @is_animated = false
+      @view = false
       
       if @inXML
         @nid = parseInt @inXML.attr("nid")
@@ -332,9 +342,17 @@ define [
         ThreeNodes.uid = @nid
       else
         @nid = ThreeNodes.Utils.get_uid()
+      
+      @inner_name = @name
+      # alert @inner_name
 
     set_fields: =>
-      url = "http://local.host:8042/aimports?"+@inner_name
+      # require (['../../../../conf.js'], function(){})
+      # console.log(conf.server.server_name)
+      # url = "http://local.host:8042/aimports?"+@inner_name
+      full_server_name = "http://local.host:8042"
+      # console.log conf.server.server_name
+      url = full_server_name+"/aimports?"+@inner_name
       # alert url
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
@@ -356,7 +374,12 @@ define [
               inner_rack.addField(port_parser[1],0)
             else if port_parser[0] is "out"
               inner_rack.addField(port_parser[1],0,"outputs") 
-
+            else if port_parser[0] is "param"
+              # alert "I am adding center field"
+              # alert "I almost finished!" 
+              #alert port_parser[1]
+              @vi = inner_rack.create_field_from_default_type(port_parser[2], port_parser[2])
+              inner_rack.add_center_textfield(@vi)
           
     typename: => @inner_name
     
