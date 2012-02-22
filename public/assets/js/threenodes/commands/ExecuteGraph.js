@@ -5,7 +5,7 @@ define(['jQuery', 'Underscore', 'Backbone'], function($, _, Backbone) {
     function ExecuteGraph() {}
 
     ExecuteGraph.prototype.execute = function() {
-      var ajax, injector, ng, node, node_NameAndConnections, node_connection, url, _i, _j, _len, _len2, _ref, _ref2;
+      var ajax, full_server_name, injector, ng, node, node_NameAndConnections, node_connection, url, _i, _j, _len, _len2, _ref, _ref2;
       injector = this.context.injector;
       ng = injector.get("NodeGraph");
       alert("Number of nodes: " + ng.nodes.length);
@@ -29,7 +29,8 @@ define(['jQuery', 'Underscore', 'Backbone'], function($, _, Backbone) {
         node_NameAndConnections = node_NameAndConnections + "aimconnect " + node_connection.from_field.node.typename() + node_connection.from_field.node.nid + " " + node_connection.from_field.name + " " + node_connection.to_field.node.typename() + node_connection.to_field.node.nid + " " + node_connection.to_field.name + "\n";
       }
       alert(node_NameAndConnections);
-      url = "http://local.host:8042/aimrun?123";
+      full_server_name = "http://local.host:8042";
+      url = full_server_name + "/aimrun?123";
       ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
       ajax.open('POST', url, true);
       return ajax.send(node_NameAndConnections);

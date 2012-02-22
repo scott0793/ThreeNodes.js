@@ -1,10 +1,9 @@
-conf = require('aim/conf.js');
-
 define [
   'jQuery',
   'Underscore', 
   'Backbone',
   "text!templates/node.tmpl.html",
+  'require',
   "order!libs/jquery.tmpl.min",
   "order!libs/jquery.contextMenu",
   "order!libs/jquery-ui/js/jquery-ui-1.9m6.min",
@@ -19,7 +18,7 @@ define [
   ThreeNodes.nodes_offset =
     top: 0
     left: 0
-	
+
   class ThreeNodes.NodeBase
     constructor: (@x = 0, @y = 0, @inXML = false, @inJSON = false) ->
       alert "I am in NodeBase" + @x + @y + @inXML + @inJSON
@@ -347,13 +346,11 @@ define [
       # alert @inner_name
 
     set_fields: =>
-      # require (['../../../../conf.js'], function(){})
-      # console.log(conf.server.server_name)
-      # url = "http://local.host:8042/aimports?"+@inner_name
+      # This variable needs to be changed manually till we figure out how to load the conf.js with require 
       full_server_name = "http://local.host:8042"
-      # console.log conf.server.server_name
+
       url = full_server_name+"/aimports?"+@inner_name
-      # alert url
+
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       ajax.open 'GET', url, true
