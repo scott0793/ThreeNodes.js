@@ -3,25 +3,50 @@ html(lang='en', xml:lang='en', xmlns='http://www.w3.org/1999/xhtml')
   head
     meta(content='text/html;charset=UTF-8', http-equiv='content-type')
     title AIM GUI
+    script(data-main='assets/js/boot.js', src='assets/js/libs/require-jquery.js')
     link(href='assets/css/screen.css', media='all', rel='stylesheet', type='text/css')
     link(href='assets/js/libs/colorpicker/css/colorpicker.css', media='all', rel='stylesheet', type='text/css')
+    link(href='favicon2.ico', rel='shortcut icon', type='image/x-icon')
   body
 - if (!everyauth.loggedIn)
   h2 Welcome to AIM
+  p 
+    | AIM, Artificial Intelligence modules, provides a GUI to mix and match different types of machine learning, sensor fusion, etc. modules. 
+    | The default version of AIM comes with a connection possibility to CommonSense, see 
+    a(href='http://sense-os.nl') http://sense-os.nl 
+    | and 
+    a(href='http://common.sense-os.nl/') http://common.sense-os.nl
+    | . This framework is meant for experienced developers and researchers that want to test several AI routines with real-world data. 
+    | To be able to really test algorithms it is possible to use the real-world data coming from your smartphone.
+    | The CommonSense app is a background application on your smartphone which sends this data to their database. 
+    | The policy of Sense B.V. is that this data will always remain yours and you have to explicitly grant permission for other parties to use this data.
+    | Anyway, it is thus possible through our interface to connect to sensor data written in the CommonSense database, process it with the modules which run on our server, and send data back to for example a virtual sensor in the CommonSense database.
+    | This allows quick prototyping of artificial intelligence techniques for our researchers.
+  p
+    | The type of AI modules you might expect in the near future are: 
+  ul 
+    li.first
+      Reservoir computing (for temporal pattern recognition), e.g.: echo state networks
+    li
+      Unsupervised learning (or in other words, clustering, or auto-associative memory), e.g.: adaptive resonance theory, k-means clustering 
+    li
+      Supervised learning
+    li
+      Reinforcement learning
+    li.last
+      Basic blocks (such as averaging, summation, etc.)
+  p
+     | Login through facebook, google, or twitter. There is no account that you need to create for AIM! 
+     | For now only twitter works... :-)
   #fb-login(style='float: left; margin-left: 5px')
     a(href='/auth/facebook', style='border: 0px')
       img(style='border: 0px', src='http://github.com/intridea/authbuttons/raw/master/png/facebook_64.png')
-  #google-login
+  #google-login(style='float: left; margin-left: 5px')
     a(href='/auth/google', style='border: 0px')
       img(style='border: 0px', src='https://github.com/intridea/authbuttons/raw/master/png/google_64.png')
   #twitter-login(style='float: left; margin-left: 5px')
     a(href='/auth/twitter', style='border: 0px')
       img(style='border: 0px', src='http://github.com/intridea/authbuttons/raw/master/png/twitter_64.png')    
-  #openid-login
-    form#openid(action='/auth/openid')
-      label(for='openid_identifier') OpenID Identifier: &nbsp;
-      input(type='text', name='openid_identifier')
-      input(type='submit') Login
 - else
   h2 Authenticated
   - if (everyauth.facebook)
