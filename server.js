@@ -6,17 +6,7 @@ var http = require('http');
 var sys = require('util');
 var exec = require('child_process').exec;
 var url = require("url");
-var conf = require('./conf.js');
-
-/***************************************************************************************
- * Global variables for our server
- ***************************************************************************************/
-/*
-var server_name = 'local.host';
-var port_id = '8042';
-var full_server_name = 'http://' + server_name + ':' + port_id;
-*/
-
+var conf = require("./conf.js");
 
 /***************************************************************************************
  * Database management
@@ -226,9 +216,9 @@ function respondFunction(req,res){
 			req.user.save(function (err) { } );
 
 			res.render('gui', {title: 'AIM GUI', layout: false });
-			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-			res.write(stdout);
-			res.end();
+//			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
+//			res.write(stdout);
+//			res.end();
 		});
 	}
 	// the /cslogin command comes from CSLoginCommand
@@ -267,9 +257,12 @@ function respondFunction(req,res){
 				// first check if it starts with "aim"...
 				// aimrun arg0 arg1
 				// aimconnect arg0 arg1 arg2 arg3
+				var aimcmd = body_split[i].replace(/[^a-z 0-9]+/gi,'');
+				//check for CS....Module
+				// and append token and secret to argument list
 				
 				// execute aimrun, aimconnect etc. 
-				exec(body_split[i], function (error, stdout, stderr) {
+				exec(aimcmd, function (error, stdout, stderr) {
 					console.log(stdout);
 				});
 			}

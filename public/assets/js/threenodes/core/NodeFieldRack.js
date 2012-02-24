@@ -247,7 +247,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/NodeField', '
 
     NodeFieldRack.prototype.add_center_textfield = function(field) {
       var f_in;
-      $(".options .center", this.node.main_view).append("<div><input type='text' id='f-txt-input-" + field.fid + "' /></div>");
+      $(".options .center", this.node.main_view).append("<div><input type='text' id='f-txt-input-" + field.fid + "' name='sensor_id' /></div>");
       f_in = $("#f-txt-input-" + field.fid);
       field.on_value_update_hooks.update_center_textfield = function(v) {
         if (v !== null) return f_in.val(v.toString());

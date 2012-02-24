@@ -1,6 +1,6 @@
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], function($, _, Backbone) {
+define(['jQuery', 'Underscore', 'Backbone', "order!aim/conf.js", "order!libs/jquery.contextMenu"], function($, _, Backbone, conf) {
   "use strict";  return ThreeNodes.AppSidebar = (function() {
 
     function AppSidebar() {
@@ -111,7 +111,7 @@ define(['jQuery', 'Underscore', 'Backbone', "order!libs/jquery.contextMenu"], fu
       var $container, ajax, self, serverResponse, url;
       self = this;
       $container = $("#tab-new");
-      url = "http://local.host:8042/aimlist?List";
+      url = conf.full_server_name + "/aimlist?List";
       serverResponse = null;
       ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
       ajax.open('GET', url, true);

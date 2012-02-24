@@ -26,6 +26,7 @@ define(['jQuery', 'Underscore', 'Backbone', 'order!threenodes/core/Node', 'order
       }
       this.context.injector.applyContext(n);
       this.nodes.push(n);
+      this.nodes_by_nid[n.nid] = n;
       return n;
     };
 

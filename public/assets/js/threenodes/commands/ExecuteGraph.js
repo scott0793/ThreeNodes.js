@@ -1,5 +1,5 @@
 
-define(['jQuery', 'Underscore', 'Backbone'], function($, _, Backbone) {
+define(['jQuery', 'Underscore', 'Backbone', 'order!aim/conf.js'], function($, _, Backbone, conf) {
   return ThreeNodes.ExecuteGraph = (function() {
 
     function ExecuteGraph() {}
@@ -28,8 +28,7 @@ define(['jQuery', 'Underscore', 'Backbone'], function($, _, Backbone) {
         node_connection = _ref2[_j];
         node_NameAndConnections = node_NameAndConnections + "aimconnect " + node_connection.from_field.node.typename() + node_connection.from_field.node.nid + " " + node_connection.from_field.name + " " + node_connection.to_field.node.typename() + node_connection.to_field.node.nid + " " + node_connection.to_field.name + "\n";
       }
-      alert(node_NameAndConnections);
-      url = "http://local.host:8042/aimrun?123";
+      url = conf.full_server_name + "/aimrun?123";
       ajax = new (window.ActiveXObject || XMLHttpRequest)('Microsoft.XMLHTTP');
       ajax.open('POST', url, true);
       return ajax.send(node_NameAndConnections);

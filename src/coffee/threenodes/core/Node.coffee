@@ -18,7 +18,7 @@ define [
   ThreeNodes.nodes_offset =
     top: 0
     left: 0
-	
+
   class ThreeNodes.NodeBase
     constructor: (@x = 0, @y = 0, @inXML = false, @inJSON = false) ->
       alert "I am in NodeBase" + @x + @y + @inXML + @inJSON
