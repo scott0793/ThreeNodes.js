@@ -53,6 +53,7 @@ UserSchema.plugin(mongooseAuth, {
         , appId: conf.fb.appId
         , appSecret: conf.fb.appSecret
         , redirectPath: '/gui'
+        , callbackPath: '/auth/facebook/callback'
         , findOrCreateUser: function (sess, accessTok, accessTokExtra, fbUser) {
         	var promise = this.Promise()
                 , User = this.User()();
@@ -80,10 +81,11 @@ UserSchema.plugin(mongooseAuth, {
     }
   , twitter: {
       everyauth: {
-          myHostname: conf.server.full_server_name
+    	  myHostname: conf.server.full_server_name
         , consumerKey: conf.twit.consumerKey
         , consumerSecret: conf.twit.consumerSecret
         , redirectPath: '/gui'
+        , callbackPath: '/auth/twitter/callback'
         , findOrCreateUser: function (sess, accessTok, accessTokSecret, twitterUser) {
             var promise = this.Promise()
             , self = this;
@@ -103,6 +105,17 @@ UserSchema.plugin(mongooseAuth, {
         }
       }
     }
+  , google: {
+      everyauth: {
+          myHostname: conf.server.full_server_name
+        , appId: conf.google.clientId
+        , appSecret: conf.google.clientSecret
+        , redirectPath: '/gui'
+        , callbackPath: '/auth/google/callback'
+        , scope: 'https://www.google.com/m8/feeds'
+      }
+    }
+    
 });
 
 UserSchema.add(
@@ -391,7 +404,6 @@ app.all('/aimrun',function(req,res){
 /**
  * Only capture GET requests, else way the GUI is not rendered. :-)
  */
-
 
 app.get('/:id?', function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
