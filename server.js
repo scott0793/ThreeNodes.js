@@ -101,12 +101,33 @@ UserSchema.plugin(mongooseAuth, {
         , appId: conf.google.clientId
         , appSecret: conf.google.clientSecret
         , redirectPath: '/gui'
-        , callbackPath: '/auth/google/callback'
-        , scope: 'https://www.google.com/m8/feeds'
+        //, callbackPath: '/oauth2callback'
+        , scope:'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
+        , findOrCreateUser: function (sess, accessTok, accessTokExtra, googleUser) {
+            var promise = this.Promise()
+            , User = this.User()();
+          // TODO Check user in session or request helper first
+          //      e.g., req.user or sess.auth.userId
+          User.findOne({'google.email': googleUser.id}, function (err, foundUser) {
+            if (foundUser) {
+              console.log('I found you in google');
+              return promise.fulfill(foundUser);
+            }
+            console.log("I am CREATING your profile...");
+            User.createWithGoogleOAuth(googleUser, accessTok, accessTokExtra, function (err, createdUser) {
+              if (err) return promise.fail(err);
+              return promise.fulfill(createdUser);
+            });
+          });
+          return promise;
+        }
       }
     }
     
 });
+
+
+
 
 UserSchema.add(
 		{
@@ -119,7 +140,7 @@ UserSchema.add(
 // create the UserSchema Model of mongodb
 mongoose.model('User', UserSchema);
 
-mongoose.connect('mongodb://' + conf.server.server_name + '/example');
+mongoose.connect('mongodb://' + 'localhost' + '/example');
 
 User = mongoose.model('User');
 
@@ -402,7 +423,7 @@ app.get('/:id?', function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
 		res.redirect('/');
 	} else{
-		//console.log("The user is NOT logged in!!!");
+		console.log("The user is NOT logged in!!!");
 		res.redirect('/');
 	}
 });
