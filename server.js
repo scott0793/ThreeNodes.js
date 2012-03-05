@@ -126,16 +126,12 @@ UserSchema.plugin(mongooseAuth, {
     
 });
 
-
-
-
 UserSchema.add(
 		{
 			token: String
 		  , secret: String
 		}
 		);
-
 
 // create the UserSchema Model of mongodb
 mongoose.model('User', UserSchema);
@@ -156,26 +152,26 @@ User = mongoose.model('User');
  * as app.get() targets, or you won't be able to "GET" them.
  */
 function respondFunction(req,res){
+	//console.log("Memory:"+process.memoryUsage());
 	var query = url.parse(req.url).query;
 	var pathname = url.parse(req.url).pathname;
 	console.log("Request for " + pathname + " " + query + " received.");
 
 	if (query == "List") {
-		
+		console.log('I am listing the AI modules');
 		if (req.user.token){
 			User.findOne({'token': req.user.token},function (err, token) {
 				if (token){
 					console.log('MongoDB detects you and lists your available CS modules here');
 					mode = 1;
+					console.log("list mode(should be 1):"+mode);
+					console.log(token.secret);
 					exec("aimlist "+mode, function (error, stdout, stderr) { 
 						res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
 						res.write(stdout);
 						res.end();
 					});
-					console.log(mode);
-					console.log(token.secret);
 					}
-					
 				else{
 					console.log('MongoDB does not detect you and only lists your available AI modules here');
 				    mode = 0;
@@ -209,12 +205,15 @@ function respondFunction(req,res){
 	}
 	else if (pathname == "/cslogin2") {
 		var oauth_symbols = query.split("&");
+		console.log("I am in cslogin2: pay attention...")
 		var token = ''; var verifier = '';
-		for (var i = 0; i < oauth_symbols.length; i++) {
-			var str = oauth_symbols[i].split("=");
-			// get second part of string after the = sign and sanitize it
-			if (i == 0) token = str[1].replace(/[^a-z 0-9]+/gi,'');
-			if (i == 1) verifier = str[1].replace(/[^a-z 0-9]+/gi,'');
+		if (oauth_symbols.length ==2){
+			for (var i = 0; i < oauth_symbols.length; i++) {
+				var str = oauth_symbols[i].split("=");
+				// get second part of string after the = sign and sanitize it
+				if (i == 0) token = str[1].replace(/[^a-z 0-9]+/gi,'');
+				if (i == 1) verifier = str[1].replace(/[^a-z 0-9]+/gi,'');
+			}
 		}
 		// warning: this secret can be temporarily stored, but subsequent token and secret need to go in user db
 		var secret = req.session.oauthsecret.replace(/[^a-z 0-9]+/gi,'');
@@ -234,20 +233,16 @@ function respondFunction(req,res){
 				if (i == 1) req.user.secret = vars[i];
 				
 			}
+			console.log('I am before the mongodb saving function...')
 			req.user.save(function (err) { } );
 
 			res.render('gui', {title: 'AIM GUI', layout: false });
-//			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
-//			res.write(stdout);
-//			res.end();
 		});
 	}
 	// the /cslogin command comes from CSLoginCommand
 	else if (pathname == "/cslogin") {
 		var param = 'id=123'
 		// this will return a oauth token but should also return a secret
-		console.log("I am in cslogin and will execute 'aimlogin oauth0 " + param + "'");
-		
 		exec("aimlogin oauth0 " + param, function (error, stdout, stderr) { 
 			res.writeHead(200, {"Content-Type": "text/plain", "Access-Control-Allow-Origin": "*"});
 			var vars = stdout.split("\n");
@@ -261,29 +256,70 @@ function respondFunction(req,res){
 		});
 	} 
 	else {
-		console.log("Very dangerous code... we can run anything we want...");
+		//console.log("Very dangerous code... we can run anything we want...");
+		if (typeof String.prototype.startsWith != 'function') {
+			  String.prototype.startsWith = function (str){
+			    return this.indexOf(str) == 0;
+			  };
+		}
 		var body = '';
 		req.on('data', function (data) {
 			body += data;
 			console.log(data.toString());
 		});
-		console.log("body"+body);
 		req.on('end', function () {
-
+			//console.log("token: "+req.user.token);
+			//console.log("secret: "+req.user.secret);
 			var body_split=body.split("\n");
-			//console.log(body_split[0]);
 			for (var i = 0; i<body_split.length-1;i++){
-				console.log(body_split[i]);
 				// sanitizing
-				// first check if it starts with "aim"...
-				// aimrun arg0 arg1
-				// aimconnect arg0 arg1 arg2 arg3
-				var aimcmd = body_split[i].replace(/[^a-z 0-9]+/gi,'');
-				//check for CS....Module
-				// and append token and secret to argument list
+				// *very first* split body_split as five or three parts
+				console.log(body_split[i]);
+				var finalcmd="";
+				var aimcmd = body_split[i].split(" ");
+				if (aimcmd[0]=="aimrun"){
+					if (aimcmd[1].startsWith("CS")){
+						if (aimcmd.length == 4){
+							// aimrun CSxxModule id sensor_id
+							aimcmd[1].replace(/[^a-z 0-9]+/gi,'');
+							aimcmd[2].replace(/[^0-9]+/gi,'');
+							aimcmd[3].replace(/[^0-9]+/gi,'');
+							finalcmd = aimcmd[0]+" "+aimcmd[1]+" "+aimcmd[2]+" "+req.user.token+" "+req.user.secret+" "+aimcmd[3];
+						}
+						else{
+							console.log ("not enough arguments supplied, probably sensor id is void!");
+							return 1;
+						}
+					}
+					else {
+						if (aimcmd.length == 3){
+							aimcmd[1].replace(/[^a-z 0-9]+/gi,'');
+							aimcmd[2].replace(/[^0-9]+/gi,'');
+							finalcmd = aimcmd.join(" ");
+						}
+						else{
+							console.log ("the number of arguments is incorrect!");
+							return 1;
+						}
+					}
+				}
+				else if (aimcmd[0]=="aimconnect"){
+					if (aimcmd.length == 5){
+						aimcmd[1].replace(/[^a-z 0-9]+/gi,'');
+						aimcmd[2].replace(/[^0-9]+/gi,'');
+						aimcmd[3].replace(/[^a-z 0-9]+/gi,'');
+						aimcmd[4].replace(/[^0-9]+/gi,'');
+						finalcmd = aimcmd.join(" ");
+					}
+					else{
+						console.log ("the number of arguments is incorrect!");
+						return 1;
+					}
+				}
 				
+				console.log(finalcmd);
 				// execute aimrun, aimconnect etc. 
-				exec(aimcmd, function (error, stdout, stderr) {
+				exec(finalcmd, function (error, stdout, stderr) {
 					console.log(stdout);
 				});
 			}
@@ -305,6 +341,7 @@ app.set('view engine', 'jade');
 
 app.configure(function(){
 	console.log('Configuring the express server');
+	//app.use(express.logger());
 	app.use(express.bodyParser());
 	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 	app.use(express.cookieParser());
@@ -328,6 +365,7 @@ app.configure(function(){
  * login window for OpenID via Facebook/Google.
  */
 app.get('/', function (req, res) {
+	console.log('render Home Page');
 	res.render('home', { layout: false} );
 });
 
@@ -421,6 +459,7 @@ app.all('/aimrun',function(req,res){
 
 app.get('/:id?', function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
+		console.log('redirect to home page');
 		res.redirect('/');
 	} else{
 		console.log("The user is NOT logged in!!!");

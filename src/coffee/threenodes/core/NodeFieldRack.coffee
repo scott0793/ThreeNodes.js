@@ -83,6 +83,7 @@ define [
     toCode: =>
       res = "{'in': [\n"
       for field of @node_fields.inputs
+      #for field of @node_fields
         res += @node_fields.inputs[field].toCode()
       res += "\t]}"
       res
@@ -166,7 +167,7 @@ define [
     
     add_center_textfield: (field) =>
       $(".options .center", @node.main_view).append("<div><input type='text' id='f-txt-input-#{field.fid}' name='sensor_id' /></div>")
-      f_in = $("#f-txt-input-#{field.fid}")
+      f_in = $("#f-txt-input-#{@node.typename()}")
       field.on_value_update_hooks.update_center_textfield = (v) ->
         if v != null
           f_in.val(v.toString())
@@ -179,7 +180,10 @@ define [
           if e.which == 13
             field.set($(this).val())
             $(this).blur()
-            
+    
+    add_center_textfield_modified: (text_string) =>
+      $(".options .center", @node.main_view).append("<div><input type='text' id='f-txt-input-#{@node.typename()}' value=#{text_string} /></div>")
+              
     create_field_from_default_type: (fname, default_value) ->
       ftype = switch $.type(default_value)
         when "number" then "Float"

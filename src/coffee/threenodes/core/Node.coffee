@@ -21,7 +21,7 @@ define [
 
   class ThreeNodes.NodeBase
     constructor: (@x = 0, @y = 0, @inXML = false, @inJSON = false) ->
-      alert "I am in NodeBase" + @x + @y + @inXML + @inJSON
+      # alert "I am in NodeBase" + @x + @y + @inXML + @inJSON
       @auto_evaluate = false
       @delays_output = false
       @dirty = true
@@ -58,6 +58,7 @@ define [
       
       # init fields
       @set_fields()
+      
       
       # init animation for current fields
       @anim = @createAnimContainer()
@@ -332,6 +333,7 @@ define [
       @anim_obj = {}
       @is_animated = false
       @view = false
+      #@vi
       
       if @inXML
         @nid = parseInt @inXML.attr("nid")
@@ -343,21 +345,19 @@ define [
         @nid = ThreeNodes.Utils.get_uid()
       
       @inner_name = @name
+      # inner_rack = @rack
       # alert @inner_name
 
     set_fields: =>
-      # require (['../../../../conf.js'], function(){})
-      # console.log(conf.server.server_name)
-      # url = "http://local.host:8042/aimports?"+@inner_name
-      # full_server_name = "http://local.host:8042"
-      # console.log conf.server.server_name
+      #@vi = @rack.create_field_from_default_type('123', '12')
+      #@rack.add_center_textfield(@vi)
       url = conf.full_server_name+"/aimports?"+@inner_name
+      inner_rack = @rack
       # alert url
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
       ajax.open 'GET', url, true
       ajax.send null
-      inner_rack = @rack
       ajax.onreadystatechange = ->
         if @readyState is 4
           serverResponse = ajax.responseText
@@ -372,16 +372,15 @@ define [
               #alert port_parser[1]
               inner_rack.addField(port_parser[1],0)
             else if port_parser[0] is "out"
-              inner_rack.addField(port_parser[1],0,"outputs") 
+              inner_rack.addField(port_parser[1],0,"outputs")  
             else if port_parser[0] is "param"
               # alert "I am adding center field"
-              # alert "I almost finished!" 
-              #alert port_parser[1]
-              @vi = inner_rack.create_field_from_default_type(port_parser[2], port_parser[2])
-              inner_rack.add_center_textfield(@vi)
-          
+              # @vi = inner_rack.create_field_from_default_type(port_parser[2], port_parser[2])
+              # the second parameter is in the text field
+              # @vi=inner_rack.addField(port_parser[2],0)
+              inner_rack.add_center_textfield_modified(port_parser[2])
+            
     typename: => @inner_name
-    
     
     load: (url) =>
       #alert url 

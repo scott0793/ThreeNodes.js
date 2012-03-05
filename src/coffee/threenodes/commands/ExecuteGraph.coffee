@@ -9,27 +9,21 @@ define [
       injector = @context.injector
       ng = injector.get("NodeGraph")
       
-      alert "Number of nodes: " + ng.nodes.length
-      alert "Number of connections: " + ng.node_connections.length
+      #alert "Number of nodes: " + ng.nodes.length
+      #alert "Number of connections: " + ng.node_connections.length
       
       node_NameAndConnections = ""
       
       for node in ng.nodes
-        node_NameAndConnections = node_NameAndConnections + "aimrun " +node.typename()+" "+node.nid+"\n"
-        # node_NameAndConnections = node_NameAndConnections + "ls" + "\n"
-        
-        
-        #alert node.typename() 
-        #alert node.nid 
-        #alert node.typename()
-        
-        ###
-        for fid in node.rack.node_fields.inputs 
-          alert node.typename()+ "contains the following input fields: "+fid
-        
-        for fid in node.rack.node_fields.outputs 
-          alert node.typename()+ "contains the following output fields: "+fid
-        ###
+        nodeName = node.typename()
+        firstTwo = nodeName.substring 0,2
+        if firstTwo is "CS"
+          f_in = $("#f-txt-input-#{node.typename()}")
+          node_NameAndConnections = node_NameAndConnections + "aimrun " +node.typename()+" "+node.nid+" "+f_in.val()+"\n"
+        else
+          node_NameAndConnections = node_NameAndConnections + "aimrun " +node.typename()+" "+node.nid+"\n"  
+        #alert node_NameAndConnections
+          
         
              
       
