@@ -64,11 +64,13 @@ define [
   'order!threenodes/commands/CSLoginCommand'
   'order!threenodes/commands/ExecuteGraph',
   "order!libs/jquery.ba-bbq.min",
+  "order!libs/jquery-ui/js/jquery-ui-1.9m6.min",
+  "order!libs/jQuery-Timepicker-Addon/jquery-ui-timepicker-addon"
 ], ($, _, Backbone, NodeGraph, AppUI) ->
   "use strict"
   class ThreeNodes.App
     constructor: (@testing_mode = false) ->
-      console.log "ThreeNodes app init..."
+      # alert "ThreeNodes app init..."
       @current_scene = false
       @current_camera = false
       @current_renderer = false

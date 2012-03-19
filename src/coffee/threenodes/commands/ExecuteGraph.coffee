@@ -6,14 +6,13 @@ define [
 ], ($, _, Backbone,conf) ->
   class ThreeNodes.ExecuteGraph
     execute: () ->
+      date1 = $("#datepicker").datetimepicker("getDate")
+      unix_time = Date.parse(date1)/1000
+      frequency = $("#frequency")
+      alert "UnixTimeStamp: "+unix_time+" Frequency: "+frequency.val()
       injector = @context.injector
       ng = injector.get("NodeGraph")
-      
-      #alert "Number of nodes: " + ng.nodes.length
-      #alert "Number of connections: " + ng.node_connections.length
-      
-      node_NameAndConnections = ""
-      
+      node_NameAndConnections = "aimconfig " + unix_time + " " + frequency.val()+"\n"
       for node in ng.nodes
         nodeName = node.typename()
         firstTwo = nodeName.substring 0,2
@@ -22,7 +21,7 @@ define [
           node_NameAndConnections = node_NameAndConnections + "aimrun " +node.typename()+" "+node.nid+" "+f_in.val()+"\n"
         else
           node_NameAndConnections = node_NameAndConnections + "aimrun " +node.typename()+" "+node.nid+"\n"  
-        #alert node_NameAndConnections
+      alert node_NameAndConnections
           
         
              

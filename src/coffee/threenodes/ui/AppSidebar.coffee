@@ -67,7 +67,15 @@ define [
       self = this
       $container = $("#tab-new")
       
-      #full_server_name = "http://local.host:8042"
+      $container.append("<ul>StartTime: <input id='datepicker' type='text' value=''></ul>")
+      $container.append("<ul>Sample Frequency in Seconds: <input id='frequency' type='text' value='1'></ul>")
+      # add two unordered lists to the AppSideBar, and an event listener (jQuery.xxx)
+      date = new Date()
+      $("#datepicker").datetimepicker({
+          showSecond: true,
+          timeFormat: 'hh:mm:ss'
+        })
+      $("#datepicker").datetimepicker("setDate", date)
       url = conf.full_server_name + "/aimlist?List"
       serverResponse = null
       ajax = new (window.ActiveXObject or XMLHttpRequest)('Microsoft.XMLHTTP')
@@ -106,8 +114,6 @@ define [
             activeClass: "ui-state-active"
             hoverClass: "ui-state-hover"
             drop: (event, ui) ->
-              #nodegraph.create_node(ui.draggable.attr("rel"), jQuery.trim(ui.draggable.html()), ui.position.left + $("#container-wrapper").scrollLeft() - 10, ui.position.top - 10 + $("#container-wrapper").scrollTop())
-              # the test added by scott
               #alert "the node is dropped!"
               nodename = ui.draggable.attr("rel")
               nodetype = jQuery.trim(ui.draggable.html())

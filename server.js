@@ -130,6 +130,10 @@ UserSchema.add(
 		{
 			token: String
 		  , secret: String
+		  /*
+		  , frequency:String
+		  , StartTime: Date
+		  */
 		}
 		);
 
@@ -157,7 +161,7 @@ function respondFunction(req,res){
 	var pathname = url.parse(req.url).pathname;
 	console.log("Request for " + pathname + " " + query + " received.");
 
-	if (query == "List") {
+	if (pathname == "/aimlist") {
 		console.log('I am listing the AI modules');
 		if (req.user.token){
 			User.findOne({'token': req.user.token},function (err, token) {
@@ -255,8 +259,30 @@ function respondFunction(req,res){
 			res.end();
 		});
 	} 
-	else {
+	else if(pathname == "/aimconfig"){
+		console.log("I am in aimconfig");
+		var body = '';
+		req.on('data', function (data) {
+			body += data;
+			console.log(data.toString());
+		});
+		req.on('end', function () {
+			var body_split=body.split(" ");
+			if (body_split[0] == "aimconfig"){
+				body_split[1].replace(/[^0-9]+/gi,'');
+				body_split[2].replace(/[^0-9]+/gi,'');
+				exec(body_split.join(" "), function (error, stdout, stderr) {
+					console.log(stdout);
+				});
+			}
+		})
+	}
+	else if(pathname == "/aimrun"){
 		//console.log("Very dangerous code... we can run anything we want...");
+		
+		/*
+		 * define the startsWith Function for later sanity check
+		 */
 		if (typeof String.prototype.startsWith != 'function') {
 			  String.prototype.startsWith = function (str){
 			    return this.indexOf(str) == 0;
@@ -268,10 +294,19 @@ function respondFunction(req,res){
 			console.log(data.toString());
 		});
 		req.on('end', function () {
-			//console.log("token: "+req.user.token);
-			//console.log("secret: "+req.user.secret);
 			var body_split=body.split("\n");
-			for (var i = 0; i<body_split.length-1;i++){
+			var parse_config = body_split[0].split(" ");
+			var startTime, frequency;
+			if (parse_config.length == 3){
+				startTime = parse_config[1].replace(/[^0-9]+/gi,'');
+				frequency = parse_config[2].replace(/[^0-9]+/gi,'');
+			}
+			else{
+				console.log ("3 arguments should be supplied for configuration, aimconfig, StartTime, Frequency");
+				return 1;
+			}
+			console.log("frequency: "+ frequency+" StartTime: "+startTime);
+			for (var i = 1; i<body_split.length-1;i++){
 				// sanitizing
 				// *very first* split body_split as five or three parts
 				console.log(body_split[i]);
@@ -284,7 +319,7 @@ function respondFunction(req,res){
 							aimcmd[1].replace(/[^a-z 0-9]+/gi,'');
 							aimcmd[2].replace(/[^0-9]+/gi,'');
 							aimcmd[3].replace(/[^0-9]+/gi,'');
-							finalcmd = aimcmd[0]+" "+aimcmd[1]+" "+aimcmd[2]+" "+req.user.token+" "+req.user.secret+" "+aimcmd[3];
+							finalcmd = aimcmd[0]+" "+aimcmd[1]+" "+aimcmd[2]+" "+req.user.token+" "+req.user.secret+" "+aimcmd[3]+" "+frequency+" "+startTime;
 						}
 						else{
 							console.log ("not enough arguments supplied, probably sensor id is void!");
@@ -377,7 +412,7 @@ app.get('/', function (req, res) {
  */
 app.get('/gui',function(req,res){
 	if(req.session.auth && req.session.auth.loggedIn){
-		console.log('Rendering gui');
+		console.log('Rendering gui................');
 		res.render('gui', {title: 'AIM GUI', layout: false });
 	} else{
 		console.log("The user is NOT logged in");
@@ -453,9 +488,20 @@ app.all('/aimrun',function(req,res){
 	}
 });
 
+app.all('/aimconfig',function(req,res){
+	if(req.session.auth && req.session.auth.loggedIn){
+		console.log('I am in /aimconfig');
+		respondFunction(req,res);
+	} else{
+		console.log("The user is NOT logged in");
+		res.redirect('/');
+	}
+});
+
 /**
  * Only capture GET requests, else way the GUI is not rendered. :-)
  */
+
 
 app.get('/:id?', function(req,res) {
 	if(req.session.auth && req.session.auth.loggedIn){
@@ -466,6 +512,9 @@ app.get('/:id?', function(req,res) {
 		res.redirect('/');
 	}
 });
+
+
+
 
 
 

@@ -21,6 +21,7 @@ define [
       _.extend(@, Backbone.Events)
     
     onRegister: () =>
+      # alert "I am in AppUI"
       injector = @context.injector
       @context.commandMap.execute "InitUrlHandler"
       @player_mode = @context.player_mode

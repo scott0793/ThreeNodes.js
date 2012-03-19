@@ -349,8 +349,6 @@ define [
       # alert @inner_name
 
     set_fields: =>
-      #@vi = @rack.create_field_from_default_type('123', '12')
-      #@rack.add_center_textfield(@vi)
       url = conf.full_server_name+"/aimports?"+@inner_name
       inner_rack = @rack
       # alert url
@@ -368,17 +366,12 @@ define [
             # alert port_parser
             # alert port_parser[0]
             if port_parser[0] is "in"
-              #alert "I am adding input fields"
-              #alert port_parser[1]
               inner_rack.addField(port_parser[1],0)
             else if port_parser[0] is "out"
               inner_rack.addField(port_parser[1],0,"outputs")  
             else if port_parser[0] is "param"
-              # alert "I am adding center field"
-              # @vi = inner_rack.create_field_from_default_type(port_parser[2], port_parser[2])
-              # the second parameter is in the text field
-              # @vi=inner_rack.addField(port_parser[2],0)
-              inner_rack.add_center_textfield_modified(port_parser[2])
+              if port_parser[2] is "sensor_id"
+                inner_rack.add_center_textfield_modified(port_parser[2])
             
     typename: => @inner_name
     
